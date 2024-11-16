@@ -252,13 +252,16 @@ func getUserByUsernameV1(context *gin.Context) {
 		gin.H{"message": fmt.Sprintf("User with username %v not found", username)})
 }
 
+// need to run `go get ./backend`
+// then `go run ./backend` to put the server up at port 8080
+
 func main() {
 	router := gin.Default()
-	router.GET("/users", getUsersV1)
-	router.GET("/users/:username", getUserByUsernameV1)
-	router.PUT("/users/:username", updateUserInfoV1)
-	router.DELETE("/users/:username", deleteUserV1)
-	router.POST("/users", createUserV1)
+	router.GET("/v1/users", getUsersV1)
+	router.GET("/v1/users/:username", getUserByUsernameV1)
+	router.PUT("/v1/users/:username", updateUserInfoV1)
+	router.DELETE("/v1/users/:username", deleteUserV1)
+	router.POST("/v1/users", createUserV1)
 
-	router.Run("localhost:8000")
+	router.Run("localhost:8080")
 }
