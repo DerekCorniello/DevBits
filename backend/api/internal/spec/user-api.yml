@@ -4,36 +4,6 @@ info:
   description: API for managing user records, including fetching, creating, updating, and deleting users.
   version: 1.0.0
 paths:
-  /users:
-    post:
-      summary: Create a new user
-      description: Creates a new user record.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-      responses:
-        201:
-          description: User created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        400:
-          description: Invalid request payload
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
   /users/{username}:
     get:
       summary: Get a user by username
@@ -221,6 +191,25 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         404:
           description: User not found
+  /users:
+    post:
+      summary: Create a new user
+      description: Creates a new user record.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        201:
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        400:
+          description: Invalid request payload
           content:
             application/json:
               schema:
