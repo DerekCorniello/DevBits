@@ -1,45 +1,47 @@
 package types
 
-import "time"
+import (
+	"time"
+)
 
 // Some of the structs that will be used to interface between
 // frontend, api, and db. Go has good handling for this
 
 type User struct {
-	Username     string    `json:"username"`
+	Username     string    `json:"username" binding:"required"`
 	Bio          string    `json:"bio"`
 	Links        []string  `json:"links"`
 	CreationDate time.Time `json:"created_on"`
-	// TODO: handle profile pic, followers, following
+	Picture      string    `json:"picture"`
 }
 
 type Project struct {
 	ID           int64     `json:"id"`
-	Owner        int64     `json:"owner"` // linked with a User
-	Name         string    `json:"name"`
-	Description  string    `json:"description"`
-	Status       int16     `json:"status"` // TODO: Enum? Does Go have Enums?
+	Owner        int64     `json:"owner" binding:"required"` // linked with a User
+	Name         string    `json:"name" binding:"required"`
+	Description  string    `json:"description" binding:"required"`
+	Status       int16     `json:"status"`
 	Likes        int64     `json:"likes"`
 	Tags         []string  `json:"tags"`
 	Links        []string  `json:"links"`
 	CreationDate time.Time `json:"created_on"`
-	// TODO: handle followers, posts
 }
 
 type Post struct {
 	ID           int64     `json:"id"`
-	User         int64     `json:"user"`    // Linked to User
-	Project      int64     `json:"project"` // Linked to Project
+	User         int64     `json:"user" binding:"required"`    // Linked to User
+	Project      int64     `json:"project" binding:"required"` // Linked to Project
 	Likes        int64     `json:"likes"`
-	Content      int64     `json:"content"`
-	Comments     int64     `json:"comment"`
+	Content      string    `json:"content" binding:"required"`
+	Comments     []int64   `json:"comments"`
 	CreationDate time.Time `json:"created_on"`
 }
 
 type Comment struct {
 	ID            int64     `json:"id"`
-	User          int64     `json:"user"`           // Linked to User
-	Post          int64     `json:"post"`           // linked to Post
-	ParentComment int64     `json:"parent_comment"` // TODO: does this need a Nil?
+	User          int64     `json:"user" binding:"required"` // Linked to User
+	Post          int64     `json:"post" binding:"required"` // linked to Post
+	ParentComment int64     `json:"parent_comment" binding:"required"`
 	CreationDate  time.Time `json:"created_on"`
+	Content       string    `json:"content" binding:"required"`
 }

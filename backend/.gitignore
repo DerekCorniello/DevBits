@@ -1,0 +1,13 @@
+.env
+*/.env
+
+*/*.sqlite3
+*/*.db
+
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
