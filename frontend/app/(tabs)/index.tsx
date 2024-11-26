@@ -6,12 +6,12 @@ export default function HomeScreen() {
     <ScrollView>
       <Post
         ID={1}
-        User={1}
+        User={"Username"}
         Project={1}
-        Likes={1}
+        Likes={69}
         Content="This is a test post. It should be displayed in the app. This is a test post. It should be displayed in the app. This is a test post. It should be displayed in the app."
-        Comments={[]}
         CreationDate={new Date()}
+        Comments={[]}
       />
     </ScrollView>
   );
