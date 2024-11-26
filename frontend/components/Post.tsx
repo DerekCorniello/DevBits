@@ -1,19 +1,37 @@
-import { CheckBox } from "@rneui/themed";
+import { CheckBox, Icon } from "@rneui/themed";
 import { Card } from "@rneui/themed";
 import { ThemedText } from "@/components/ThemedText";
 import { useState } from "react";
+import { useThemeColor } from "@/hooks/useThemeColor";
 import { Stack } from "expo-router";
+import { ThemedView } from "./ThemedView";
 
 function Like() {
   const [checked, setState] = useState(true);
   const toggleCheckbox = () => setState(!checked);
   return (
     <CheckBox
-      checked={false}
-      checkedIcon="octicon DotFillIcon"
-      uncheckedIcon="octicon DotIcon"
-      checkedColor="#375388"
-      onPress={toggleCheckbox}
+      center
+      checkedIcon={
+        <Icon
+          name="heart-fill"
+          type="octicon"
+          color="green"
+          size={25}
+          iconStyle={{ marginRight: 10 }}
+        />
+      }
+      uncheckedIcon={
+        <Icon
+          name="heart"
+          type="octicon"
+          color="grey"
+          size={25}
+          iconStyle={{ marginRight: 10 }}
+        />
+      }
+      checked={checked}
+      onPress={() => toggleCheckbox()}
     />
   );
 }
@@ -38,22 +56,16 @@ export function Post({
   CreationDate,
 }: PostProps) {
   return (
-    <Card>
-      <Card.Title>\{User}</Card.Title>
-      <Card.Divider />
-      <Card.Image
-        style={{ padding: 0 }}
-        source={{
-          uri: "https://awildgeographer.files.wordpress.com/2015/02/john_muir_glacier.jpg",
-        }}
-      />
-      <Card.Divider />
-      <ThemedText type="defaultSemiBold">{Content}</ThemedText>
-      <Stack row-align="center">
+    <ThemedView>
+      <Card>
+        <Card.Title>{User}</Card.Title>
+        <Card.Divider />
+        <ThemedText type="defaultSemiBold">{Content}</ThemedText>
+        <Card.Divider />
         <Like />
         <ThemedText type="subtitle">{Likes}</ThemedText>
         <ThemedText type="subtitle">{CreationDate.toUTCString()}</ThemedText>
-      </Stack>
-    </Card>
+      </Card>
+    </ThemedView>
   );
 }
