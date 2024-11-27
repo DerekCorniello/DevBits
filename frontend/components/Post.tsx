@@ -1,39 +1,58 @@
-import { useState } from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
+import { useState, useRef } from "react";
+import { View, Text, Image, StyleSheet, Animated } from "react-native";
 import { Card, Icon, CheckBox } from "@rneui/themed";
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
 function Like() {
   const [checked, setChecked] = useState(false);
-  const toggleLike = () => setChecked(!checked);
+  const scaleValue = useRef(new Animated.Value(1)).current;
 
+  const toggleLike = () => {
+    Animated.sequence([
+      Animated.timing(scaleValue, {
+        toValue: 1.1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleValue, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    setChecked(!checked);
+  };
   return (
-    <CheckBox
-      center
-      containerStyle={styles.checkboxContainer}
-      checkedIcon={
-        <Icon
-          name="heart-fill"
-          type="octicon"
-          color="red"
-          size={20}
-          iconStyle={styles.iconStyle}
-        />
-      }
-      uncheckedIcon={
-        <Icon
-          name="heart"
-          type="octicon"
-          color="grey"
-          size={20}
-          iconStyle={styles.iconStyle}
-        />
-      }
-      checked={checked}
-      onPress={toggleLike}
-    />
+    <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+      <CheckBox
+        center
+        containerStyle={[
+          styles.checkboxContainer,
+          checked && styles.glowEffect,
+        ]}
+        checkedIcon={
+          <Icon
+            name="heart-fill"
+            type="octicon"
+            color="red"
+            size={20}
+            iconStyle={styles.iconStyle}
+          />
+        }
+        uncheckedIcon={
+          <Icon
+            name="heart"
+            type="octicon"
+            color="grey"
+            size={20}
+            iconStyle={styles.iconStyle}
+          />
+        }
+        checked={checked}
+        onPress={toggleLike}
+      />
+    </Animated.View>
   );
 }
 
@@ -117,6 +136,12 @@ const styles = StyleSheet.create({
     padding: 1,
     backgroundColor: "transparent",
     borderWidth: 0,
+  },
+  glowEffect: {
+    shadowColor: "red",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
   },
   footer: {
     flexDirection: "row",
