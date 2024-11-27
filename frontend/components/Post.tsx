@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { View, Text, Image, StyleSheet, Animated } from "react-native";
+import { View, Text, StyleSheet, Animated } from "react-native";
 import { Card, Icon, CheckBox } from "@rneui/themed";
 import { ThemedText } from "@/components/ThemedText";
 import { useThemeColor } from "@/hooks/useThemeColor";
@@ -56,6 +56,18 @@ function Like() {
   );
 }
 
+function Comment() {
+  return (
+    <Icon
+      name="comment"
+      type="octicon"
+      color="grey"
+      size={20}
+      iconStyle={styles.iconStyle}
+    />
+  );
+}
+
 export type PostProps = {
   ID: number;
   User: string;
@@ -75,9 +87,8 @@ export function Post({
   Comments,
   CreationDate,
 }: PostProps) {
-  //This changes between light and dark when it is switched. Made it a little off from backround colors.
   const cardBackgroundColor = useThemeColor(
-    { light: "light grey", dark: "#000" },
+    { light: "light grey", dark: "#151515" },
     "background"
   );
   return (
@@ -85,26 +96,42 @@ export function Post({
       containerStyle={[styles.card, { backgroundColor: cardBackgroundColor }]}
     >
       <View style={styles.header}>
-        {/* THis is where  i think the user photo should go*/}
         <ThemedText type="default" style={styles.username}>
           {User}
+        </ThemedText>
+        <ThemedText type="subtitle" style={styles.project}>
+          Stream {Project}
         </ThemedText>
       </View>
       <ThemedText type="default" style={styles.content}>
         {Content}
       </ThemedText>
-      {/*looks weird i dont know how to get rid of the space at the top*/}
       <Card.Divider style={styles.divider} />
       <View style={styles.footer}>
-        <Like />
-        <Text style={styles.likes}>{Likes} Likes</Text>
+        <View style={styles.actionContainer}>
+          <Like />
+          <Text style={styles.bottomText}>{Likes} likes</Text>
+        </View>
+        <View style={styles.actionContainer}>
+          <Comment />
+          <Text style={styles.bottomText}>{Comments.length} bits</Text>
+        </View>
       </View>
-      <Text style={styles.date}>{CreationDate.toUTCString()}</Text>
+      <Text style={styles.date}>
+        {CreationDate.toLocaleString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+        })}
+      </Text>
     </Card>
   );
 }
 
-// I fr dont have the mental capacity to figure out how to make the text colors match the theme so gl
 const styles = StyleSheet.create({
   card: {
     borderRadius: 12,
@@ -124,6 +151,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
+  project: {
+    fontSize: 14,
+    marginLeft: 5,
+  },
   content: {
     fontSize: 14,
     lineHeight: 20,
@@ -131,11 +162,13 @@ const styles = StyleSheet.create({
   },
   iconStyle: {
     backgroundColor: "transparent",
+    marginRight: 5,
   },
   checkboxContainer: {
     padding: 1,
     backgroundColor: "transparent",
     borderWidth: 0,
+    marginRight: 0,
   },
   glowEffect: {
     shadowColor: "red",
@@ -146,15 +179,22 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     marginTop: 5,
   },
-  likes: {
+  actionContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  bottomText: {
     fontSize: 14,
     color: "grey",
+    marginLeft: 5,
   },
   date: {
     fontSize: 12,
     color: "grey",
     alignSelf: "flex-end",
+    marginTop: 5,
   },
 });
