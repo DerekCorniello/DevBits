@@ -1,4 +1,4 @@
-# Title - DevBits
+# DevBits
 
 ## Goal: Create an X and LinkedIn crossover for posting real content about your projects, semi-formally
 
@@ -8,14 +8,63 @@ Projects are the baseline of the app, you must have a project to post.
 
 Anyone can comment, like, follow, despite their project count.
 
+Some quirky names for things (frontend only)
 - Projects are called 'Stream's
 - Posts about projects are called 'Byte's
 - Comments are called 'Bit's
-- (Not sure if we want this to be the names in the db or not)
 
 ### Tech Stack:
 
 - Backend/API in Go, Elixir/Scala if need big data processing
-- Frontend: ReactNative? React? Vue? VanillaJS?
+- Frontend: ReactNative and Expo
 - Database: PostgreSQL or MySQL
-- Host: On AWS, use EC2 and API Gateway for Backend, link to RDS and Elasticache instance. Pull media from a CloudFront Instance.
+- Host: On AWS, full system design pending
+
+## Local Testing:
+
+### Backend Testing
+
+Install the following packages:
+- [**Go**](https://go.dev/doc/install) (for running the API)
+- [**SQLite3**](https://www.sqlite.org/index.html) (for database operations)
+
+#### 1. Navigate to the Project Root
+Change into the project directory:
+```bash
+$ cd /path/to/DevBits
+```
+
+#### 2. Start the Database
+1. Open a terminal and navigate to the database directory:
+   ```bash
+   $ cd backend/api/internal/database
+   ```
+
+2. Launch the SQLite database:
+   ```bash
+   $ sqlite3 dev.sqlite3
+   ```
+
+3. (Optional) Open the `create_tables.sql` file in a new terminal for reference:
+   ```bash
+   $ nvim create_tables.sql
+   ```
+
+#### 3. Start the API
+1. Open another terminal and navigate to the backend directory:
+   ```bash
+   $ cd backend
+   ```
+
+2. Run the API:
+   ```bash
+   $ go run ./api
+   ```
+
+That's it! You're ready to start working with the DevBits API and database.
+
+---
+
+### Frontend Testing
+
+#### TBD
