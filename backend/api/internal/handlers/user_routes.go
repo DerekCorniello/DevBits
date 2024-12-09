@@ -47,6 +47,7 @@ func GetUserByUsername(context *gin.Context) {
 
 	user, err := database.QueryUsername(username)
 	if err != nil {
+		logger.Log.Infof("Failed to get user: %v", err)
 		context.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Internal server error",
 			"message": fmt.Sprintf("Failed to fetch user: %v", err),
@@ -122,6 +123,7 @@ func UpdateUserInfo(context *gin.Context) {
 
 	existingUser, err := database.QueryUsername(username)
 	if err != nil {
+		logger.Log.Infof("Failed to update user: %v", err)
 		context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error fetching user: %v", err)})
 		return
 	}
@@ -139,6 +141,7 @@ func UpdateUserInfo(context *gin.Context) {
 		if isFieldAllowed(existingUser, key) {
 			updatedData[key] = value
 		} else {
+            logger.Log.Infof("Failed to update user: %v", err)
 			context.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Field '%s' is not allowed to be updated", key)})
 			return
 		}
@@ -157,6 +160,7 @@ func GetUsersFollowers(context *gin.Context) {
 
 	followers, err := database.QueryGetUsersFollowers(username)
 	if err != nil {
+		logger.Log.Infof("Failed to obtain followers: %v", err)
 		context.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Internal server error",
 			"message": fmt.Sprintf("Failed to fetch followers: %v", err),
@@ -179,6 +183,7 @@ func GetUsersFollowing(context *gin.Context) {
 
 	followers, err := database.QueryGetUsersFollowing(username)
 	if err != nil {
+		logger.Log.Infof("Failed to obtain following: %v", err)
 		context.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Internal server error",
 			"message": fmt.Sprintf("Failed to fetch following: %v", err),
