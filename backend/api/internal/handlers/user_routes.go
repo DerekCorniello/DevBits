@@ -13,7 +13,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Here are all the routes
+
+func isFieldAllowed(existingUser interface{}, fieldName string) bool {
+	// existingUser should be a pointer to the struct, so get the type of the struct
+	val := reflect.ValueOf(existingUser)
+
+	// data insurance
+	// If it's a pointer, dereference it to get the value
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+	if val.Kind() != reflect.Struct {
+		return false
+	}
+
+	// Loop through all fields of the struct
+	for i := 0; i < val.NumField(); i++ {
+		// Get the field and its JSON tag
+		field := val.Type().Field(i)
+		jsonTag := field.Tag.Get("json")
+
+		// If the JSON tag matches the fieldName, return true
+		if strings.ToLower(jsonTag) == strings.ToLower(fieldName) {
+			return true
+		}
+	}
+
+	return false
+}
 
 func GetUserByUsername(context *gin.Context) {
 	username := context.Param("username")
@@ -83,34 +110,6 @@ func DeleteUser(context *gin.Context) {
 	})
 }
 
-func isFieldAllowed(existingUser interface{}, fieldName string) bool {
-	// existingUser should be a pointer to the struct, so get the type of the struct
-	val := reflect.ValueOf(existingUser)
-
-	// data insurance
-	// If it's a pointer, dereference it to get the value
-	if val.Kind() == reflect.Ptr {
-		val = val.Elem()
-	}
-	if val.Kind() != reflect.Struct {
-		return false
-	}
-
-	// Loop through all fields of the struct
-	for i := 0; i < val.NumField(); i++ {
-		// Get the field and its JSON tag
-		field := val.Type().Field(i)
-		jsonTag := field.Tag.Get("json")
-
-		// If the JSON tag matches the fieldName, return true
-		if strings.ToLower(jsonTag) == strings.ToLower(fieldName) {
-			return true
-		}
-	}
-
-	return false
-}
-
 func UpdateUserInfo(context *gin.Context) {
 	var updateData map[string]interface{}
 	username := context.Param("username")
@@ -151,4 +150,48 @@ func UpdateUserInfo(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, gin.H{"message": "User updated successfully", "user": updatedData})
+}
+
+func GetUsersFollowers(context *gin.Context) {
+	username := context.Param("username")
+
+	followers, err := database.QueryGetUsersFollowers(username)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Internal server error",
+			"message": fmt.Sprintf("Failed to fetch followers: %v", err),
+		})
+		return
+	}
+
+	if followers == nil || len(followers) == 0 {
+		context.JSON(http.StatusNotFound, gin.H{
+			"message": fmt.Sprintf("No followers for username '%v' found", username),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, followers)
+}
+
+func GetUsersFollowing(context *gin.Context) {
+	username := context.Param("username")
+
+	followers, err := database.QueryGetUsersFollowing(username)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Internal server error",
+			"message": fmt.Sprintf("Failed to fetch following: %v", err),
+		})
+		return
+	}
+
+	if followers == nil || len(followers) == 0 {
+		context.JSON(http.StatusNotFound, gin.H{
+			"message": fmt.Sprintf("No followers for username '%v' found", username),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, followers)
 }

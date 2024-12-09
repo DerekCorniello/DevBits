@@ -44,7 +44,9 @@ INSERT INTO CommentLikes (comment_id, user_id) VALUES
 -- Insert User Follows
 INSERT INTO UserFollows (follower_id, follows_id) VALUES
     ((SELECT id FROM Users WHERE username = 'dev_user1'), (SELECT id FROM Users WHERE username = 'tech_writer2')),
-    ((SELECT id FROM Users WHERE username = 'tech_writer2'), (SELECT id FROM Users WHERE username = 'data_scientist3'));
+    ((SELECT id FROM Users WHERE username = 'tech_writer2'), (SELECT id FROM Users WHERE username = 'data_scientist3')),
+    ((SELECT id FROM Users WHERE username = 'dev_user1'), (SELECT id FROM Users WHERE username = 'data_scientist3')),
+    ((SELECT id FROM Users WHERE username = 'data_scientist3'), (SELECT id FROM Users WHERE username = 'dev_user1'));
 
 -- Insert Project Follows
 INSERT INTO ProjectFollows (project_id, user_id) VALUES

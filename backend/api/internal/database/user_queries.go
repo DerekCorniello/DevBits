@@ -137,3 +137,90 @@ func QueryUpdateUser(username string, updatedData map[string]interface{}) error 
 
 	return nil
 }
+
+func getUserIdByName(username string) int {
+    // fetches the username given an id
+	query := `SELECT id FROM Users WHERE username = ?`
+	var userID int
+	row := DB.QueryRow(query, username)
+	err := row.Scan(&userID)
+	if err != nil {
+		logger.Log.Infof("Error fetching user ID for username %s: %v", username, err)
+		return -1 // return -1 as bad value
+	}
+    return userID
+}
+
+func QueryGetUsersFollowers(username string) ([]string, error) {
+    
+    userID := getUserIdByName(username)
+	query := `
+        SELECT u.username 
+        FROM Users u
+        JOIN UserFollows uf ON u.id = uf.follower_id
+        WHERE uf.follows_id = ?`
+
+	rows, err := DB.Query(query, userID)
+	if err != nil {
+		logger.Log.Infof("Error fetching followers for user ID %d: %v", userID, err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var followers []string
+	for rows.Next() {
+        // rows.Scan() edits param in place, need to instantiate first
+		var followerUsername string
+		err := rows.Scan(&followerUsername)
+		if err != nil {
+			logger.Log.Infof("Error scanning follower row: %v", err)
+			return nil, err
+		}
+		followers = append(followers, followerUsername)
+	}
+
+    // handles issues with iteration
+	if err := rows.Err(); err != nil {
+		logger.Log.Infof("Error iterating through follower rows: %v", err)
+		return nil, err
+	}
+
+	return followers, nil
+}
+
+func QueryGetUsersFollowing(username string) ([]string, error) {
+    // fetches the username given an id
+    userID := getUserIdByName(username)
+    query := `
+        SELECT u.username 
+        FROM Users u
+        JOIN UserFollows uf ON u.id = uf.follows_id
+        WHERE uf.follower_id = ?`
+
+	rows, err := DB.Query(query, userID)
+	if err != nil {
+		logger.Log.Infof("Error fetching following for user ID %d: %v", userID, err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var following []string
+	for rows.Next() {
+        // rows.Scan() edits param in place, need to instantiate first
+		var followingUsername string
+		err := rows.Scan(&followingUsername)
+		if err != nil {
+			logger.Log.Infof("Error scanning follower row: %v", err)
+			return nil, err
+		}
+		following = append(following, followingUsername)
+	}
+
+    // handles issues with iteration
+	if err := rows.Err(); err != nil {
+		logger.Log.Infof("Error iterating through follower rows: %v", err)
+		return nil, err
+	}
+
+	return following, nil
+}

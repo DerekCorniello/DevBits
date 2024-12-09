@@ -23,6 +23,9 @@ func main() {
 	router.DELETE("/users/:username", handlers.DeleteUser)
 	router.POST("/users", handlers.CreateUser)
 
+	router.GET("/users/:username/followers", handlers.GetUsersFollowers)
+	router.GET("/users/:username/follows", handlers.GetUsersFollowing)
+
 	var dbinfo, dbtype string
 	if DEBUG {
 		dbinfo = "./api/internal/database/dev.sqlite3"
