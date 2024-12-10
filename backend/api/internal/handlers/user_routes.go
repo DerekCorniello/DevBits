@@ -12,6 +12,29 @@ import (
 )
 
 
+func GetUsernameById(context *gin.Context) {
+	username := context.Param("username")
+
+	user, err := database.QueryUsername(username)
+	if err != nil {
+		logger.Log.Infof("Failed to get user: %v", err)
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Internal server error",
+			"message": fmt.Sprintf("Failed to fetch user: %v", err),
+		})
+		return
+	}
+
+	if user == nil {
+		context.JSON(http.StatusNotFound, gin.H{
+			"message": fmt.Sprintf("User with username '%v' not found", username),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, user)
+}
+
 func GetUserByUsername(context *gin.Context) {
 	username := context.Param("username")
 

@@ -54,9 +54,27 @@ func CreateProject(context *gin.Context) {
 		})
 		return
 	}
+
+    username, err := database.GetUsernameById(newProj.Owner)
+    if err != nil {
+		logger.Log.Infof("Failed to verify project ownership: %v", err)
+		context.IndentedJSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("%v", err),
+		})
+		return
+    }
+
+    if username == "" {
+		logger.Log.Info("Failed to verify project ownership. User could not be found")
+		context.IndentedJSON(http.StatusNotFound, gin.H{
+			"error": "User bound to project could not be found.",
+		})
+		return
+    }
+
 	id, err := database.QueryCreateProject(&newProj)
 	if err != nil {
-		logger.Log.Infof("Failed to create user: %v", err)
+		logger.Log.Infof("Failed to create project: %v", err)
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"error": fmt.Sprintf("%v", err),
 		})
