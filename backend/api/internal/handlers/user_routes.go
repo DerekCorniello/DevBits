@@ -120,8 +120,8 @@ func UpdateUserInfo(context *gin.Context) {
 			return
 		}
 	}
-
-	if err := database.QueryUpdateUser(username, updatedData); err != nil {
+    err = database.QueryUpdateUser(username, updatedData);
+	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error updating user: %v", err)})
 		return
 	}
