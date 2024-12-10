@@ -7,22 +7,22 @@ import (
 
 	"backend/api/internal/database"
 	"backend/api/internal/logger"
-    "backend/api/internal/types"
+	"backend/api/internal/types"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetProjectById(context *gin.Context) {
 	strId := context.Param("id")
-    id, err :=  strconv.Atoi(strId)
-    if err != nil {
+	id, err := strconv.Atoi(strId)
+	if err != nil {
 		logger.Log.Infof("Failed to parse project ID: %v", err)
 		context.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Bad Request",
 			"message": fmt.Sprintf("Failed to parse project ID: %v", err),
 		})
 		return
-    }
+	}
 	project, err := database.QueryProject(id)
 	if err != nil {
 		logger.Log.Infof("Failed to get project: %v", err)
@@ -44,8 +44,8 @@ func GetProjectById(context *gin.Context) {
 }
 
 func CreateProject(context *gin.Context) {
-    var newProj types.Project
-    err := context.BindJSON(&newProj)
+	var newProj types.Project
+	err := context.BindJSON(&newProj)
 
 	if err != nil {
 		logger.Log.Infof("Failed to bind to JSON: %v", err)
@@ -54,7 +54,7 @@ func CreateProject(context *gin.Context) {
 		})
 		return
 	}
-	err = database.QueryCreateProject(&newProj)
+	id, err := database.QueryCreateProject(&newProj)
 	if err != nil {
 		logger.Log.Infof("Failed to create user: %v", err)
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{
@@ -62,22 +62,22 @@ func CreateProject(context *gin.Context) {
 		})
 		return
 	}
-	context.IndentedJSON(http.StatusCreated, newProj)
+	context.IndentedJSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Project created successfully with id '%v'", id)})
 }
 
 func DeleteProject(context *gin.Context) {
-    strId := context.Param("id")
-    id, err := strconv.Atoi(strId)
-    if err != nil {
+	strId := context.Param("id")
+	id, err := strconv.Atoi(strId)
+	if err != nil {
 		logger.Log.Infof("Failed to parse project ID: %v", err)
 		context.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Bad Request",
 			"message": fmt.Sprintf("Failed to parse project ID: %v", err),
 		})
 		return
-    }
+	}
 
-    code, err := database.QueryDeleteProject(id)
+	code, err := database.QueryDeleteProject(id)
 	if err != nil {
 		logger.Log.Infof("Failed to delete project: %v", err)
 		var httpCode int
@@ -100,26 +100,26 @@ func DeleteProject(context *gin.Context) {
 }
 
 func UpdateProjectInfo(context *gin.Context) {
-    var updateData map[string]interface{}
+	var updateData map[string]interface{}
 
-    id, err := strconv.Atoi(context.Param("id"))
-    if err != nil {
+	id, err := strconv.Atoi(context.Param("id"))
+	if err != nil {
 		logger.Log.Infof("Failed to parse project id: %v", err)
-    }
+	}
 
-    err = context.BindJSON(&updateData)
-    if err != nil {
+	err = context.BindJSON(&updateData)
+	if err != nil {
 		logger.Log.Infof("Failed to update user: %v", err)
 		context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error fetching user: %v", err)})
 		return
-    }
+	}
 
-    existingProj, err := database.QueryProject(id)
-    if existingProj == nil {
-        context.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
-    }
+	existingProj, err := database.QueryProject(id)
+	if existingProj == nil {
+		context.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
+	}
 
-    updatedData := make(map[string]interface{})
+	updatedData := make(map[string]interface{})
 
 	// Iterate through the fields of the existing user and map the request data to those fields
 	for key, value := range updateData {
@@ -127,16 +127,16 @@ func UpdateProjectInfo(context *gin.Context) {
 		if IsFieldAllowed(existingProj, key) {
 			updatedData[key] = value
 		} else {
-            logger.Log.Infof("Failed to update project: %v", err)
+			logger.Log.Infof("Failed to update project: %v", err)
 			context.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Field '%s' is not allowed to be updated", key)})
 			return
 		}
 	}
 
-    err = database.QueryUpdateProject(id, updatedData);
+	err = database.QueryUpdateProject(id, updatedData)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error updating project: %v", err)})
 		return
 	}
-    context.JSON(http.StatusOK, gin.H{"message": "Project updated successfully", "project": id})
+	context.JSON(http.StatusOK, gin.H{"message": "Project updated successfully", "project": id})
 }
