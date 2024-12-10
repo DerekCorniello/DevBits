@@ -98,3 +98,43 @@ func QueryDeleteProject(id int) (int16, error) {
 	logger.Log.Infof("Deleted project %v.", id)
 	return 200, nil
 }
+
+func QueryUpdateProject(id int, updatedData map[string]interface{}) error {
+    query := `UPDATE Projects SET `
+    var args []interface{}
+
+    for key, value := range updatedData {
+        switch key {
+        case "links", "tags":
+            jsonData, err := json.Marshal(value)
+            if err != nil {
+                return fmt.Errorf("Error marshaling list data: %v", err)
+            }
+            query += fmt.Sprintf("%v = ?, ", key)
+            args = append(args, string(jsonData))
+        default:
+            query += fmt.Sprintf("%v = ?, ", key)
+            args = append(args, value)
+        }
+    }
+	// continue formatting query
+	// get rid of trailing space and comma
+	query = query[:len(query)-2]
+	query += " WHERE id = ?"
+	args = append(args, id)
+
+	res, err := DB.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("Error executing update query: %v", err)
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("Error checking rows affected: %v", err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("No project found with id `%d` to update", id)
+	}
+
+	return nil
+}

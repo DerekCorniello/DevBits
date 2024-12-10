@@ -28,7 +28,7 @@ func main() {
 
     router.GET("/projects/:id", handlers.GetProjectById)
     router.POST("/projects", handlers.CreateProject)
-
+	router.PUT("/projects/:id", handlers.UpdateProjectInfo)
     router.DELETE("/projects/:id", handlers.DeleteProject)
 
 	var dbinfo, dbtype string

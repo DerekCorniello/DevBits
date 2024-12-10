@@ -98,3 +98,45 @@ func DeleteProject(context *gin.Context) {
 		"message": fmt.Sprintf("Project %v deleted.", id),
 	})
 }
+
+func UpdateProjectInfo(context *gin.Context) {
+    var updateData map[string]interface{}
+
+    id, err := strconv.Atoi(context.Param("id"))
+    if err != nil {
+		logger.Log.Infof("Failed to parse project id: %v", err)
+    }
+
+    err = context.BindJSON(&updateData)
+    if err != nil {
+		logger.Log.Infof("Failed to update user: %v", err)
+		context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error fetching user: %v", err)})
+		return
+    }
+
+    existingProj, err := database.QueryProject(id)
+    if existingProj == nil {
+        context.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
+    }
+
+    updatedData := make(map[string]interface{})
+
+	// Iterate through the fields of the existing user and map the request data to those fields
+	for key, value := range updateData {
+		// use helper to check if the field exists in existingUser
+		if IsFieldAllowed(existingProj, key) {
+			updatedData[key] = value
+		} else {
+            logger.Log.Infof("Failed to update project: %v", err)
+			context.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Field '%s' is not allowed to be updated", key)})
+			return
+		}
+	}
+
+    err = database.QueryUpdateProject(id, updatedData);
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error updating project: %v", err)})
+		return
+	}
+    context.JSON(http.StatusOK, gin.H{"message": "Project updated successfully", "project": id})
+}
