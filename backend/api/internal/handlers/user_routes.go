@@ -3,8 +3,6 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"reflect"
-	"strings"
 
 	"backend/api/internal/database"
 	"backend/api/internal/logger"
@@ -13,34 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
-func isFieldAllowed(existingUser interface{}, fieldName string) bool {
-	// existingUser should be a pointer to the struct, so get the type of the struct
-	val := reflect.ValueOf(existingUser)
-
-	// data insurance
-	// If it's a pointer, dereference it to get the value
-	if val.Kind() == reflect.Ptr {
-		val = val.Elem()
-	}
-	if val.Kind() != reflect.Struct {
-		return false
-	}
-
-	// Loop through all fields of the struct
-	for i := 0; i < val.NumField(); i++ {
-		// Get the field and its JSON tag
-		field := val.Type().Field(i)
-		jsonTag := field.Tag.Get("json")
-
-		// If the JSON tag matches the fieldName, return true
-		if strings.ToLower(jsonTag) == strings.ToLower(fieldName) {
-			return true
-		}
-	}
-
-	return false
-}
 
 func GetUserByUsername(context *gin.Context) {
 	username := context.Param("username")
@@ -119,7 +89,8 @@ func UpdateUserInfo(context *gin.Context) {
 	username := context.Param("username")
 
 	// Bind the incoming JSON data to a map
-	if err := context.BindJSON(&updateData); err != nil {
+    err := context.BindJSON(&updateData);
+	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
 		return
 	}
@@ -141,7 +112,7 @@ func UpdateUserInfo(context *gin.Context) {
 	// Iterate through the fields of the existing user and map the request data to those fields
 	for key, value := range updateData {
 		// use helper to check if the field exists in existingUser
-		if isFieldAllowed(existingUser, key) {
+		if IsFieldAllowed(existingUser, key) {
 			updatedData[key] = value
 		} else {
             logger.Log.Infof("Failed to update user: %v", err)
