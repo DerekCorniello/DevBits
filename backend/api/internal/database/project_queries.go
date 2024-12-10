@@ -46,3 +46,34 @@ func QueryProject(id int) (*types.Project, error) {
 
     return &project, nil
 }
+
+func QueryCreateProject(proj *types.Project) error {
+	linksJSON, err := json.Marshal(proj.Links)
+	if err != nil {
+		logger.Log.Errorf("Failed to marshal links for project `%v`: %v", proj.Name, err)
+		return fmt.Errorf("Failed to marshal links for project `%v`: %v", proj.Name, err)
+	}
+
+	tagsJSON, err := json.Marshal(proj.Tags)
+	if err != nil {
+		logger.Log.Errorf("Failed to marshal tags for project `%v`: %v", proj.Name, err)
+		return fmt.Errorf("Failed to marshal tags for project `%v`: %v", proj.Name, err)
+	}
+    query := `INSERT INTO Projects (name, description, status, links, tags, owner)
+              VALUES (?, ?, ?, ?, ?, ?);`
+
+    res, err := DB.Exec(query, proj.Name, proj.Description, proj.Status, string(linksJSON), string(tagsJSON), proj.Owner)
+
+    if err != nil {
+        logger.Log.Errorf("Failed to create project `%v`: `%v", proj.Name, err)
+    }
+
+	lastId, err := res.LastInsertId()
+	if err != nil {
+		logger.Log.Errorf("Failed to ensure proj was created: %v", err)
+		return fmt.Errorf("Failed to ensure proj was created: %v", err)
+	}
+
+	logger.Log.Infof("Created proj %v with id `%v`", proj.Name, lastId)
+	return nil
+}

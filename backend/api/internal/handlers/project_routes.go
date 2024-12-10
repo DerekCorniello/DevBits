@@ -3,10 +3,11 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-    "strconv"
+	"strconv"
 
 	"backend/api/internal/database"
 	"backend/api/internal/logger"
+    "backend/api/internal/types"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,4 +41,26 @@ func GetProjectById(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, project)
+}
+
+func CreateProject(context *gin.Context) {
+    var newProj types.Project
+    err := context.BindJSON(&newProj)
+
+	if err != nil {
+		logger.Log.Infof("Failed to bind to JSON: %v", err)
+		context.IndentedJSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("%v", err),
+		})
+		return
+	}
+	err = database.QueryCreateProject(&newProj)
+	if err != nil {
+		logger.Log.Infof("Failed to create user: %v", err)
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"error": fmt.Sprintf("%v", err),
+		})
+		return
+	}
+	context.IndentedJSON(http.StatusCreated, newProj)
 }
