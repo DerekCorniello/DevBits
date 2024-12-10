@@ -112,6 +112,9 @@ func DeleteUser(context *gin.Context) {
 }
 
 func UpdateUserInfo(context *gin.Context) {
+    // we dont want to create a whole new user, that is
+    // why we dont use a user type here...
+    // maybe could change later
 	var updateData map[string]interface{}
 	username := context.Param("username")
 

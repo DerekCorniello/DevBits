@@ -26,6 +26,8 @@ func main() {
 	router.GET("/users/:username/followers", handlers.GetUsersFollowers)
 	router.GET("/users/:username/follows", handlers.GetUsersFollowing)
 
+    router.GET("/projects/:id", handlers.GetProjectById)
+
 	var dbinfo, dbtype string
 	if DEBUG {
 		dbinfo = "./api/internal/database/dev.sqlite3"
