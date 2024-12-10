@@ -127,8 +127,8 @@ func UpdateProjectInfo(context *gin.Context) {
 
 	err = context.BindJSON(&updateData)
 	if err != nil {
-		logger.Log.Infof("Failed to update user: %v", err)
-		context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error fetching user: %v", err)})
+		logger.Log.Infof("Failed to update project: %v", err)
+		context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error fetching project: %v", err)})
 		return
 	}
 
@@ -139,9 +139,9 @@ func UpdateProjectInfo(context *gin.Context) {
 
 	updatedData := make(map[string]interface{})
 
-	// Iterate through the fields of the existing user and map the request data to those fields
+	// Iterate through the fields of the existing project and map the request data to those fields
 	for key, value := range updateData {
-		// use helper to check if the field exists in existingUser
+		// use helper to check if the field exists in existingProj
 		if IsFieldAllowed(existingProj, key) {
 			updatedData[key] = value
 		} else {
