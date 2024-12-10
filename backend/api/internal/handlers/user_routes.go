@@ -3,8 +3,6 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"reflect"
-	"strings"
 
 	"backend/api/internal/database"
 	"backend/api/internal/logger"
@@ -14,32 +12,27 @@ import (
 )
 
 
-func isFieldAllowed(existingUser interface{}, fieldName string) bool {
-	// existingUser should be a pointer to the struct, so get the type of the struct
-	val := reflect.ValueOf(existingUser)
+func GetUsernameById(context *gin.Context) {
+	username := context.Param("username")
 
-	// data insurance
-	// If it's a pointer, dereference it to get the value
-	if val.Kind() == reflect.Ptr {
-		val = val.Elem()
-	}
-	if val.Kind() != reflect.Struct {
-		return false
-	}
-
-	// Loop through all fields of the struct
-	for i := 0; i < val.NumField(); i++ {
-		// Get the field and its JSON tag
-		field := val.Type().Field(i)
-		jsonTag := field.Tag.Get("json")
-
-		// If the JSON tag matches the fieldName, return true
-		if strings.ToLower(jsonTag) == strings.ToLower(fieldName) {
-			return true
-		}
+	user, err := database.QueryUsername(username)
+	if err != nil {
+		logger.Log.Infof("Failed to get user: %v", err)
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Internal server error",
+			"message": fmt.Sprintf("Failed to fetch user: %v", err),
+		})
+		return
 	}
 
-	return false
+	if user == nil {
+		context.JSON(http.StatusNotFound, gin.H{
+			"message": fmt.Sprintf("User with username '%v' not found", username),
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, user)
 }
 
 func GetUserByUsername(context *gin.Context) {
@@ -47,6 +40,7 @@ func GetUserByUsername(context *gin.Context) {
 
 	user, err := database.QueryUsername(username)
 	if err != nil {
+		logger.Log.Infof("Failed to get user: %v", err)
 		context.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Internal server error",
 			"message": fmt.Sprintf("Failed to fetch user: %v", err),
@@ -111,17 +105,22 @@ func DeleteUser(context *gin.Context) {
 }
 
 func UpdateUserInfo(context *gin.Context) {
+    // we dont want to create a whole new user, that is
+    // why we dont use a user type here...
+    // maybe could change later
 	var updateData map[string]interface{}
 	username := context.Param("username")
 
 	// Bind the incoming JSON data to a map
-	if err := context.BindJSON(&updateData); err != nil {
+    err := context.BindJSON(&updateData);
+	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
 		return
 	}
 
 	existingUser, err := database.QueryUsername(username)
 	if err != nil {
+		logger.Log.Infof("Failed to update user: %v", err)
 		context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error fetching user: %v", err)})
 		return
 	}
@@ -136,15 +135,16 @@ func UpdateUserInfo(context *gin.Context) {
 	// Iterate through the fields of the existing user and map the request data to those fields
 	for key, value := range updateData {
 		// use helper to check if the field exists in existingUser
-		if isFieldAllowed(existingUser, key) {
+		if IsFieldAllowed(existingUser, key) {
 			updatedData[key] = value
 		} else {
+            logger.Log.Infof("Failed to update user: %v", err)
 			context.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Field '%s' is not allowed to be updated", key)})
 			return
 		}
 	}
-
-	if err := database.QueryUpdateUser(username, updatedData); err != nil {
+    err = database.QueryUpdateUser(username, updatedData);
+	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error updating user: %v", err)})
 		return
 	}
@@ -157,6 +157,7 @@ func GetUsersFollowers(context *gin.Context) {
 
 	followers, err := database.QueryGetUsersFollowers(username)
 	if err != nil {
+		logger.Log.Infof("Failed to obtain followers: %v", err)
 		context.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Internal server error",
 			"message": fmt.Sprintf("Failed to fetch followers: %v", err),
@@ -179,6 +180,7 @@ func GetUsersFollowing(context *gin.Context) {
 
 	followers, err := database.QueryGetUsersFollowing(username)
 	if err != nil {
+		logger.Log.Infof("Failed to obtain following: %v", err)
 		context.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Internal server error",
 			"message": fmt.Sprintf("Failed to fetch following: %v", err),

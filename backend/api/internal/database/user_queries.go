@@ -9,6 +9,26 @@ import (
 	"backend/api/internal/types"
 )
 
+func GetUsernameById(id int64) (string, error) {
+	query := `SELECT username FROM Users WHERE id = ?;`
+
+	row := DB.QueryRow(query, id)
+
+    var retrievedUserName string
+
+	err := row.Scan(&retrievedUserName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			logger.Log.Infof("No user found with id: %d", id)
+			return "", nil
+		}
+		logger.Log.Infof("Error fetching user: %v", err)
+		return "", err
+	}
+
+	return retrievedUserName, nil
+}
+
 func QueryUsername(username string) (*types.User, error) {
 	query := `SELECT username, profile_pic, bio, links, creation_date FROM Users WHERE username = ?;`
 

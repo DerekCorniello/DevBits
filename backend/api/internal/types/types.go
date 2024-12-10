@@ -17,7 +17,7 @@ type User struct {
 
 type Project struct {
 	ID           int64     `json:"id"`
-	Owner        int64     `json:"owner" binding:"required"` // linked with a User
+	Owner        int64     `json:"owner" binding:"required"`
 	Name         string    `json:"name" binding:"required"`
 	Description  string    `json:"description" binding:"required"`
 	Status       int16     `json:"status"`
@@ -29,8 +29,8 @@ type Project struct {
 
 type Post struct {
 	ID           int64     `json:"id"`
-	User         int64     `json:"user" binding:"required"`    // Linked to User
-	Project      int64     `json:"project" binding:"required"` // Linked to Project
+	User         int64     `json:"user" binding:"required"`
+	Project      int64     `json:"project" binding:"required"`
 	Likes        int64     `json:"likes"`
 	Content      string    `json:"content" binding:"required"`
 	Comments     []int64   `json:"comments"`
@@ -39,8 +39,8 @@ type Post struct {
 
 type Comment struct {
 	ID            int64     `json:"id"`
-	User          int64     `json:"user" binding:"required"` // Linked to User
-	Post          int64     `json:"post" binding:"required"` // linked to Post
+	User          int64     `json:"user" binding:"required"`
+	Post          int64     `json:"post" binding:"required"`
 	ParentComment int64     `json:"parent_comment" binding:"required"`
 	CreationDate  time.Time `json:"created_on"`
 	Content       string    `json:"content" binding:"required"`

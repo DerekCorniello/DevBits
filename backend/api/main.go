@@ -19,12 +19,17 @@ func main() {
 
 	router := gin.Default()
 	router.GET("/users/:username", handlers.GetUserByUsername)
+    router.POST("/users", handlers.CreateUser)
 	router.PUT("/users/:username", handlers.UpdateUserInfo)
 	router.DELETE("/users/:username", handlers.DeleteUser)
-	router.POST("/users", handlers.CreateUser)
 
 	router.GET("/users/:username/followers", handlers.GetUsersFollowers)
 	router.GET("/users/:username/follows", handlers.GetUsersFollowing)
+
+    router.GET("/projects/:id", handlers.GetProjectById)
+    router.POST("/projects", handlers.CreateProject)
+	router.PUT("/projects/:id", handlers.UpdateProjectInfo)
+    router.DELETE("/projects/:id", handlers.DeleteProject)
 
 	var dbinfo, dbtype string
 	if DEBUG {
