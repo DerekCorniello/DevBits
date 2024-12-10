@@ -77,3 +77,24 @@ func QueryCreateProject(proj *types.Project) error {
 	logger.Log.Infof("Created proj %v with id `%v`", proj.Name, lastId)
 	return nil
 }
+
+func QueryDeleteProject(id int) (int16, error) {
+	query := `DELETE from Projects WHERE id=?;`
+	res, err := DB.Exec(query, id)
+	if err != nil {
+		logger.Log.Errorf("Failed to delete project `%v`: %v", id, err)
+		return 400, fmt.Errorf("Failed to delete project `%v`: %v", id, err)
+	}
+
+	RowsAffected, err := res.RowsAffected()
+	if RowsAffected == 0 {
+		logger.Log.Errorf("Deletion did not affect any records")
+		return 404, fmt.Errorf("Deletion did not affect any records")
+	} else if err != nil {
+		logger.Log.Errorf("Failed to fetch affected rows: %v", err)
+		return 500, fmt.Errorf("Failed to fetch affected rows: %v", err)
+	}
+
+	logger.Log.Infof("Deleted project %v.", id)
+	return 200, nil
+}

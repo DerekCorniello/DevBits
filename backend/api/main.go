@@ -29,6 +29,8 @@ func main() {
     router.GET("/projects/:id", handlers.GetProjectById)
     router.POST("/projects", handlers.CreateProject)
 
+    router.DELETE("/projects/:id", handlers.DeleteProject)
+
 	var dbinfo, dbtype string
 	if DEBUG {
 		dbinfo = "./api/internal/database/dev.sqlite3"

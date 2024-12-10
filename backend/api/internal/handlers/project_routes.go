@@ -64,3 +64,37 @@ func CreateProject(context *gin.Context) {
 	}
 	context.IndentedJSON(http.StatusCreated, newProj)
 }
+
+func DeleteProject(context *gin.Context) {
+    strId := context.Param("id")
+    id, err := strconv.Atoi(strId)
+    if err != nil {
+		logger.Log.Infof("Failed to parse project ID: %v", err)
+		context.JSON(http.StatusBadRequest, gin.H{
+			"error":   "Bad Request",
+			"message": fmt.Sprintf("Failed to parse project ID: %v", err),
+		})
+		return
+    }
+
+    code, err := database.QueryDeleteProject(id)
+	if err != nil {
+		logger.Log.Infof("Failed to delete project: %v", err)
+		var httpCode int
+		switch code {
+		case 400:
+			httpCode = http.StatusBadRequest
+		case 404:
+			httpCode = http.StatusNotFound
+		default:
+			httpCode = http.StatusInternalServerError
+		}
+		context.IndentedJSON(httpCode, gin.H{
+			"error": fmt.Sprintf("%v", err),
+		})
+		return
+	}
+	context.IndentedJSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("Project %v deleted.", id),
+	})
+}
