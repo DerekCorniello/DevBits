@@ -141,7 +141,9 @@ paths:
           content:
             application/json:
               schema:
-                type: list[string]
+                type: array
+                items:
+                  format: string
         400:
           description: Invalid username format or missing parameter
           content:
@@ -161,8 +163,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-
-
   /users/{username}/follows:
     get:
       summary: Retrieves a user's list of following
@@ -172,8 +172,9 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            description: The username of the user whose following list is to be retrieved.
+            type: array
+            items:
+              type: string
       responses:
         200:
           description: Successfully retrieved the following list
@@ -232,9 +233,12 @@ components:
         bio:
           type: string
         links:
-          type: JSON # or []string?
+          type: array
+          items:
+            type: string
         created_on:
-          type: date
+          type: string
+          format: date-time
         picture:
           type: string
     ErrorResponse:
