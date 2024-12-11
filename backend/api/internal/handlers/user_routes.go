@@ -84,7 +84,8 @@ func DeleteUser(context *gin.Context) {
 func UpdateUserInfo(context *gin.Context) {
 	// we dont want to create a whole new user, that is
 	// why we dont use a user type here...
-	// maybe could change later
+	// maybe could change later, so we can use
+	// an empty mapped interface
 	var updateData map[string]interface{}
 	username := context.Param("username")
 
@@ -131,14 +132,8 @@ func GetUsersFollowers(context *gin.Context) {
 	username := context.Param("username")
 
 	followers, err := database.QueryGetUsersFollowers(username)
-	if err != nil {
-        RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to fetch followers: %v", err))
-		return
-	}
-
-    // should this return 404 or something empty? not sure, can change if frontend people need
-	if followers == nil || len(followers) == 0 {
-        RespondWithError(context, http.StatusNotFound, fmt.Sprintf("No followers for username '%v' found", username))
+	if err != nil { // see above func, may be able to handle 404 vs 500?
+		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to fetch followers: %v", err))
 		return
 	}
 
@@ -149,16 +144,8 @@ func GetUsersFollowing(context *gin.Context) {
 	username := context.Param("username")
 
 	following, err := database.QueryGetUsersFollowing(username)
-	if err != nil {
-        RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to fetch following: %v", err))
-		return
-	}
-
-    // ditto above in getting followers
-	if following == nil || len(following) == 0 {
-		context.JSON(http.StatusNotFound, gin.H{
-			"message": fmt.Sprintf("No following for username '%v' found", username),
-		})
+	if err != nil { // see above func, may be able to handle 404 vs 500?
+		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to fetch following: %v", err))
 		return
 	}
 

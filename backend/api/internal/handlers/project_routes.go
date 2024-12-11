@@ -40,6 +40,7 @@ func CreateProject(context *gin.Context) {
 		return
 	}
 
+	// verify the owner
 	username, err := database.GetUsernameById(newProj.Owner)
 	if err != nil {
 		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to verify project ownership: %v", err))
@@ -47,7 +48,7 @@ func CreateProject(context *gin.Context) {
 	}
 
 	if username == "" {
-		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Failed to verify project ownership. User could not be found"))
+		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to verify project ownership. User could not be found"))
 		return
 	}
 
@@ -68,6 +69,7 @@ func DeleteProject(context *gin.Context) {
 	}
 
 	code, err := database.QueryDeleteProject(id)
+	// delete projects can return different errors...
 	if err != nil {
 		var httpCode int
 		switch code {
@@ -103,7 +105,19 @@ func UpdateProjectInfo(context *gin.Context) {
 
 	existingProj, err := database.QueryProject(id)
 	if existingProj == nil {
-		RespondWithError(context, http.StatusNotFound, "Project not found")
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Project with id '%v' not found", id))
+		return
+	}
+
+	// verify there is still an owner
+	username, err := database.GetUsernameById(existingProj.Owner)
+	if err != nil {
+		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to verify project ownership: %v", err))
+		return
+	}
+
+	if username == "" {
+		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to verify project ownership. User could not be found"))
 		return
 	}
 
@@ -115,14 +129,14 @@ func UpdateProjectInfo(context *gin.Context) {
 		if IsFieldAllowed(existingProj, key) {
 			updatedData[key] = value
 		} else {
-            RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to update project: %v", err))
+			RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to update project: %v", err))
 			return
 		}
 	}
 
 	err = database.QueryUpdateProject(id, updatedData)
 	if err != nil {
-        RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Error updating project: %v", err))
+		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Error updating project: %v", err))
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"message": "Project updated successfully", "project": id})

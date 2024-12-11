@@ -91,7 +91,7 @@ func QueryUpdateProject(id int, updatedData map[string]interface{}) error {
 
 	queryParams, args, err := BuildUpdateQuery(updatedData)
 	if err != nil {
-        return fmt.Errorf("Error building query: %v", err)
+		return fmt.Errorf("Error building query: %v", err)
 	}
 
 	query += queryParams + " WHERE id = ?"

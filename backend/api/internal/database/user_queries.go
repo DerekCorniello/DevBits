@@ -8,7 +8,6 @@ import (
 	"backend/api/internal/types"
 )
 
-// GetUsernameById retrieves the username for a given user ID.
 func GetUsernameById(id int64) (string, error) {
 	query := `SELECT username FROM Users WHERE id = ?;`
 
@@ -26,7 +25,6 @@ func GetUsernameById(id int64) (string, error) {
 	return retrievedUserName, nil
 }
 
-// QueryUsername fetches the details of a user by their username.
 func QueryUsername(username string) (*types.User, error) {
 	query := `SELECT username, profile_pic, bio, links, creation_date FROM Users WHERE username = ?;`
 
@@ -42,7 +40,6 @@ func QueryUsername(username string) (*types.User, error) {
 		return nil, err
 	}
 
-	// Parse links JSON into a []string
 	var links []string
 	err = json.Unmarshal([]byte(linksJSON), &links)
 	if err != nil {
@@ -53,7 +50,6 @@ func QueryUsername(username string) (*types.User, error) {
 	return &user, nil
 }
 
-// QueryCreateUser creates a new user in the database.
 func QueryCreateUser(user *types.User) error {
 	linksJSON, err := json.Marshal(user.Links)
 	if err != nil {
@@ -76,7 +72,6 @@ func QueryCreateUser(user *types.User) error {
 	return nil
 }
 
-// QueryDeleteUser deletes a user from the database by username.
 func QueryDeleteUser(username string) (int16, error) {
 	query := `DELETE from Users WHERE username=?;`
 	res, err := DB.Exec(query, username)
@@ -94,14 +89,13 @@ func QueryDeleteUser(username string) (int16, error) {
 	return 200, nil
 }
 
-// QueryUpdateUser updates a user's information in the database.
 func QueryUpdateUser(username string, updatedData map[string]interface{}) error {
-    query := `UPDATE Users SET `
+	query := `UPDATE Users SET `
 	var args []interface{}
 
 	queryParams, args, err := BuildUpdateQuery(updatedData)
 	if err != nil {
-        return fmt.Errorf("Error building query: %v", err)
+		return fmt.Errorf("Error building query: %v", err)
 	}
 
 	query += queryParams + " WHERE username = ?"
@@ -118,21 +112,19 @@ func QueryUpdateUser(username string, updatedData map[string]interface{}) error 
 	return nil
 }
 
-// getUserIdByName retrieves the user ID by their username.
-func getUserIdByName(username string) (int, error) {
+func GetUserIdByUsername(username string) (int, error) {
 	query := `SELECT id FROM Users WHERE username = ?`
 	var userID int
 	row := DB.QueryRow(query, username)
 	err := row.Scan(&userID)
-	if err != nil {
-		return -1, fmt.Errorf("Error fetching user ID for username `%v`: %v", username, err)
+	if err != nil { // TODO: Is there a way this can return a 404 vs 500 error? this could be a 404 or 500, but we cannot tell from an err here
+		return -1, fmt.Errorf("Error fetching user ID for username `%v` (this usually means username does not exist) : %v", username, err)
 	}
 	return userID, nil
 }
 
-// QueryGetUsersFollowers retrieves the list of followers for a given username.
 func QueryGetUsersFollowers(username string) ([]string, error) {
-	userID, err := getUserIdByName(username)
+	userID, err := GetUserIdByUsername(username)
 	if err != nil {
 		return nil, err
 	}
@@ -146,9 +138,8 @@ func QueryGetUsersFollowers(username string) ([]string, error) {
 	return getUsersFollowingOrFollowers(query, userID)
 }
 
-// QueryGetUsersFollowing retrieves the list of users a given username is following.
 func QueryGetUsersFollowing(username string) ([]string, error) {
-	userID, err := getUserIdByName(username)
+	userID, err := GetUserIdByUsername(username)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +153,6 @@ func QueryGetUsersFollowing(username string) ([]string, error) {
 	return getUsersFollowingOrFollowers(query, userID)
 }
 
-// getUsersFollowingOrFollowers is a shared function to fetch following or followers
 func getUsersFollowingOrFollowers(query string, userID int) ([]string, error) {
 	rows, err := ExecQuery(query, userID)
 	if err != nil {
