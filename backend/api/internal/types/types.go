@@ -45,3 +45,8 @@ type Comment struct {
 	CreationDate  time.Time `json:"created_on"`
 	Content       string    `json:"content" binding:"required"`
 }
+
+type ErrorResponse struct {
+    Error   string `json:"error"`
+    Message string `json:"message"`
+}
