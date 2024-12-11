@@ -24,7 +24,7 @@ func GetProjectById(context *gin.Context) {
 	}
 
 	if project == nil {
-		RespondWithError(context, http.StatusFound, fmt.Sprintf("Project with id '%v' not found", strId))
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Project with id '%v' not found", strId))
 		return
 	}
 
