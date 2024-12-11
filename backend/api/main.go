@@ -14,10 +14,17 @@ import (
 
 const DEBUG bool = true
 
+func HealthCheck(context *gin.Context) {
+    context.JSON(200, gin.H{"message": "API is running!"})
+}
+
 func main() {
 	logger.InitLogger()
 
 	router := gin.Default()
+
+    router.GET("health", HealthCheck)
+
 	router.GET("/users/:username", handlers.GetUserByUsername)
     router.POST("/users", handlers.CreateUser)
 	router.PUT("/users/:username", handlers.UpdateUserInfo)

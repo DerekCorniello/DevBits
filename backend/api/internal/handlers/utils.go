@@ -1,8 +1,14 @@
 package handlers
 
 import (
-    "reflect"
-    "strings"
+	"net/http"
+	"reflect"
+	"strings"
+
+	"backend/api/internal/logger"
+	"backend/api/internal/types"
+
+	"github.com/gin-gonic/gin"
 )
 
 func IsFieldAllowed(existingData interface{}, fieldName string) bool {
@@ -33,3 +39,11 @@ func IsFieldAllowed(existingData interface{}, fieldName string) bool {
 	return false
 }
 
+func RespondWithError(context *gin.Context, status int, message string) {
+	logger.Log.Infof("Error: %s", message)
+	response := types.ErrorResponse{
+		Error:   http.StatusText(status),
+		Message: message,
+	}
+	context.JSON(status, response)
+}

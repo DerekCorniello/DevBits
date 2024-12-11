@@ -5,30 +5,22 @@ import (
 	"net/http"
 
 	"backend/api/internal/database"
-	"backend/api/internal/logger"
 	"backend/api/internal/types"
 
 	"github.com/gin-gonic/gin"
 )
-
 
 func GetUsernameById(context *gin.Context) {
 	username := context.Param("username")
 
 	user, err := database.QueryUsername(username)
 	if err != nil {
-		logger.Log.Infof("Failed to get user: %v", err)
-		context.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "Internal server error",
-			"message": fmt.Sprintf("Failed to fetch user: %v", err),
-		})
+		RespondWithError(context, http.StatusInternalServerError, "Failed to fetch user")
 		return
 	}
 
 	if user == nil {
-		context.JSON(http.StatusNotFound, gin.H{
-			"message": fmt.Sprintf("User with username '%v' not found", username),
-		})
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("User with username '%v' not found", username))
 		return
 	}
 
@@ -40,18 +32,12 @@ func GetUserByUsername(context *gin.Context) {
 
 	user, err := database.QueryUsername(username)
 	if err != nil {
-		logger.Log.Infof("Failed to get user: %v", err)
-		context.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "Internal server error",
-			"message": fmt.Sprintf("Failed to fetch user: %v", err),
-		})
+		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to get user: %v", err))
 		return
 	}
 
 	if user == nil {
-		context.JSON(http.StatusNotFound, gin.H{
-			"message": fmt.Sprintf("User with username '%v' not found", username),
-		})
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("User with username '%v' not found", username))
 		return
 	}
 
@@ -63,18 +49,12 @@ func CreateUser(context *gin.Context) {
 	err := context.BindJSON(&newUser)
 
 	if err != nil {
-		logger.Log.Infof("Failed to bind to JSON: %v", err)
-		context.IndentedJSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("%v", err),
-		})
+		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to bind to JSON: %v", err))
 		return
 	}
 	err = database.QueryCreateUser(&newUser)
 	if err != nil {
-		logger.Log.Infof("Failed to create user: %v", err)
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{
-			"error": fmt.Sprintf("%v", err),
-		})
+		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to create user: %v", err))
 		return
 	}
 	context.IndentedJSON(http.StatusCreated, newUser)
@@ -84,7 +64,6 @@ func DeleteUser(context *gin.Context) {
 	username := context.Param("username")
 	code, err := database.QueryDeleteUser(username)
 	if err != nil {
-		logger.Log.Infof("Failed to delete user: %v", err)
 		var httpCode int
 		switch code {
 		case 400:
@@ -94,9 +73,7 @@ func DeleteUser(context *gin.Context) {
 		default:
 			httpCode = http.StatusInternalServerError
 		}
-		context.IndentedJSON(httpCode, gin.H{
-			"error": fmt.Sprintf("%v", err),
-		})
+		RespondWithError(context, httpCode, fmt.Sprintf("Failed to delete user: %v", err))
 		return
 	}
 	context.IndentedJSON(http.StatusOK, gin.H{
@@ -105,28 +82,28 @@ func DeleteUser(context *gin.Context) {
 }
 
 func UpdateUserInfo(context *gin.Context) {
-    // we dont want to create a whole new user, that is
-    // why we dont use a user type here...
-    // maybe could change later
+	// we dont want to create a whole new user, that is
+	// why we dont use a user type here...
+	// maybe could change later, so we can use
+	// an empty mapped interface
 	var updateData map[string]interface{}
 	username := context.Param("username")
 
 	// Bind the incoming JSON data to a map
-    err := context.BindJSON(&updateData);
+	err := context.BindJSON(&updateData)
 	if err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Invalid request data: %v", err))
 		return
 	}
 
 	existingUser, err := database.QueryUsername(username)
 	if err != nil {
-		logger.Log.Infof("Failed to update user: %v", err)
-		context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error fetching user: %v", err)})
+		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Error fetching user: %v", err))
 		return
 	}
 
 	if existingUser == nil {
-		context.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("User with name '%v' not found", username))
 		return
 	}
 
@@ -138,14 +115,13 @@ func UpdateUserInfo(context *gin.Context) {
 		if IsFieldAllowed(existingUser, key) {
 			updatedData[key] = value
 		} else {
-            logger.Log.Infof("Failed to update user: %v", err)
-			context.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Field '%s' is not allowed to be updated", key)})
+			RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Field '%s' is not allowed to be updated", key))
 			return
 		}
 	}
-    err = database.QueryUpdateUser(username, updatedData);
+	err = database.QueryUpdateUser(username, updatedData)
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error updating user: %v", err)})
+		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Error updating user: %v", err))
 		return
 	}
 
@@ -156,19 +132,8 @@ func GetUsersFollowers(context *gin.Context) {
 	username := context.Param("username")
 
 	followers, err := database.QueryGetUsersFollowers(username)
-	if err != nil {
-		logger.Log.Infof("Failed to obtain followers: %v", err)
-		context.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "Internal server error",
-			"message": fmt.Sprintf("Failed to fetch followers: %v", err),
-		})
-		return
-	}
-
-	if followers == nil || len(followers) == 0 {
-		context.JSON(http.StatusNotFound, gin.H{
-			"message": fmt.Sprintf("No followers for username '%v' found", username),
-		})
+	if err != nil { // see above func, may be able to handle 404 vs 500?
+		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to fetch followers: %v", err))
 		return
 	}
 
@@ -178,22 +143,11 @@ func GetUsersFollowers(context *gin.Context) {
 func GetUsersFollowing(context *gin.Context) {
 	username := context.Param("username")
 
-	followers, err := database.QueryGetUsersFollowing(username)
-	if err != nil {
-		logger.Log.Infof("Failed to obtain following: %v", err)
-		context.JSON(http.StatusInternalServerError, gin.H{
-			"error":   "Internal server error",
-			"message": fmt.Sprintf("Failed to fetch following: %v", err),
-		})
+	following, err := database.QueryGetUsersFollowing(username)
+	if err != nil { // see above func, may be able to handle 404 vs 500?
+		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to fetch following: %v", err))
 		return
 	}
 
-	if followers == nil || len(followers) == 0 {
-		context.JSON(http.StatusNotFound, gin.H{
-			"message": fmt.Sprintf("No followers for username '%v' found", username),
-		})
-		return
-	}
-
-	context.JSON(http.StatusOK, followers)
+	context.JSON(http.StatusOK, following)
 }
