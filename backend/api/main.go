@@ -22,6 +22,7 @@ func main() {
 	logger.InitLogger()
 
 	router := gin.Default()
+	router.HandleMethodNotAllowed = true
 
     router.GET("health", HealthCheck)
 
