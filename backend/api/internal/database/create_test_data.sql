@@ -11,10 +11,10 @@ INSERT INTO Projects (name, description, status, likes, tags, links, owner, crea
     ('ML Research', 'Research repository for various machine learning algorithms.', 1, 45, '["Machine Learning", "Python", "Research"]', '["https://github.com/data_scientist3/ml-research"]', (SELECT id FROM Users WHERE username = 'data_scientist3'), datetime('now', '-3 months'));
 
 -- Insert Posts
-INSERT INTO Posts (content, project_id, creation_date, user_id, likes, comments) VALUES
-    ('Excited to release the first version of OpenAPI Toolkit!', (SELECT id FROM Projects WHERE name = 'OpenAPI Toolkit'), datetime('now', '-3 months'), (SELECT id FROM Users WHERE username = 'dev_user1'), 40, '[]'),
-    ('We''ve archived DocuHelper, but feel free to explore the code.', (SELECT id FROM Projects WHERE name = 'DocuHelper'), datetime('now', '-6 months'), (SELECT id FROM Users WHERE username = 'tech_writer2'), 25, '[]'),
-    ('Updated ML Research repo with new algorithms for data analysis.', (SELECT id FROM Projects WHERE name = 'ML Research'), datetime('now', '-1 month'), (SELECT id FROM Users WHERE username = 'data_scientist3'), 15, '[]');
+INSERT INTO Posts (content, project_id, creation_date, user_id, likes) VALUES
+    ('Excited to release the first version of OpenAPI Toolkit!', (SELECT id FROM Projects WHERE name = 'OpenAPI Toolkit'), datetime('now', '-3 months'), (SELECT id FROM Users WHERE username = 'dev_user1'), 40),
+    ('We''ve archived DocuHelper, but feel free to explore the code.', (SELECT id FROM Projects WHERE name = 'DocuHelper'), datetime('now', '-6 months'), (SELECT id FROM Users WHERE username = 'tech_writer2'), 25),
+    ('Updated ML Research repo with new algorithms for data analysis.', (SELECT id FROM Projects WHERE name = 'ML Research'), datetime('now', '-1 month'), (SELECT id FROM Users WHERE username = 'data_scientist3'), 15);
 
 -- Insert Comments
 INSERT INTO Comments (content, post_id, parent_comment_id, creation_date, user_id) VALUES

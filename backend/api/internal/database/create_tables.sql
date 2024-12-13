@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS CommentLikes;
 DROP TABLE IF EXISTS PostLikes;
 DROP TABLE IF EXISTS ProjectLikes;
 DROP TABLE IF EXISTS ProjectComments;
+DROP TABLE IF EXISTS PostComments;
 DROP TABLE IF EXISTS Comments;
 DROP TABLE IF EXISTS Posts;
 DROP TABLE IF EXISTS ProjectFollows;
@@ -59,9 +60,17 @@ CREATE TABLE Posts (
     creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_id INTEGER NOT NULL,
     likes INTEGER DEFAULT 0,
-    comments JSON,
     FOREIGN KEY (project_id) REFERENCES Projects(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+);
+
+-- Project Comments Table (Normalizing comments relationship)
+CREATE TABLE PostComments (
+    post_id INTEGER NOT NULL,
+    comment_id INTEGER NOT NULL,
+    FOREIGN KEY (post_id) REFERENCES Posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (comment_id) REFERENCES Comments(id) ON DELETE CASCADE,
+    PRIMARY KEY (post_id, comment_id)
 );
 
 -- Comments Table
