@@ -6,8 +6,12 @@ import (
 	"io"
 	"net/http"
 	"testing"
+    "fmt"
+    "os"
+    "database/sql"
 
 	"github.com/stretchr/testify/assert"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type TestCase struct {
@@ -33,6 +37,28 @@ var main_tests []TestCase = []TestCase{
 		ExpectedStatus: http.StatusMethodNotAllowed,
 		ExpectedBody:   `405 method not allowed`,
 	},
+}
+
+func ResetTestDatabase(db *sql.DB) error {
+	files := []string{
+		"../database/create_tables.sql",
+		"../database/create_test_data.sql",
+	}
+
+	for _, file := range files {
+		sqlBytes, err := os.ReadFile(file)
+		if err != nil {
+			return fmt.Errorf("failed to read file %s: %v", file, err)
+		}
+
+		_, err = db.Exec(string(sqlBytes))
+		if err != nil {
+			return fmt.Errorf("failed to execute SQL from file %s: %v", file, err)
+		}
+	}
+
+	fmt.Println("Test database reset successfully.")
+	return nil
 }
 
 func (tc *TestCase) Run(t *testing.T) {
@@ -95,6 +121,17 @@ func TestAPI(t *testing.T) {
 		"Project Tests": project_tests,
 		"Comment Tests": comment_tests,
 		"Post Tests":    post_tests,
+	}
+
+    db, err := sql.Open("sqlite3", "../database/dev.sqlite3")
+	if err != nil {
+		panic(fmt.Sprintf("Failed to connect to database: %v", err))
+	}
+	defer db.Close()
+
+	err = ResetTestDatabase(db)
+	if err != nil {
+		panic(fmt.Sprintf("Database reset failed: %v", err))
 	}
 
 	// iterate through categories and run tests in parallel within each category

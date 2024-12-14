@@ -57,14 +57,14 @@ func CreateProject(context *gin.Context) {
 		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to create project: %v", err))
 		return
 	}
-	context.IndentedJSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Project created successfully with id '%v'", id)})
+	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Project created successfully with id '%v'", id)})
 }
 
 func DeleteProject(context *gin.Context) {
 	strId := context.Param("id")
 	id, err := strconv.Atoi(strId)
 	if err != nil {
-		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse project ID: %v", err))
+		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse project id: %v", err))
 		return
 	}
 
@@ -83,61 +83,72 @@ func DeleteProject(context *gin.Context) {
 		RespondWithError(context, httpCode, fmt.Sprintf("Failed to delete project: %v", err))
 		return
 	}
-	context.IndentedJSON(http.StatusOK, gin.H{
+	context.JSON(http.StatusOK, gin.H{
 		"message": fmt.Sprintf("Project %v deleted.", id),
 	})
 }
-
 func UpdateProjectInfo(context *gin.Context) {
 	var updateData map[string]interface{}
 
+	// Parse project ID from the URL
 	id, err := strconv.Atoi(context.Param("id"))
 	if err != nil {
 		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse project id: %v", err))
 		return
 	}
 
+	// Parse incoming JSON
 	err = context.BindJSON(&updateData)
 	if err != nil {
-		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to update project: %v", err))
+		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse update data: %v", err))
 		return
 	}
 
+	// Check if the project exists
 	existingProj, err := database.QueryProject(id)
+	if err != nil {
+		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to retrieve project: %v", err))
+		return
+	}
 	if existingProj == nil {
 		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Project with id '%v' not found", id))
 		return
 	}
 
-	// verify there is still an owner
-	username, err := database.GetUsernameById(existingProj.Owner)
-	if err != nil {
-		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to verify project ownership: %v", err))
-		return
-	}
-
-	if username == "" {
-		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to verify project ownership. User could not be found"))
-		return
-	}
-
-	updatedData := make(map[string]interface{})
-
-	// Iterate through the fields of the existing project and map the request data to those fields
-	for key, value := range updateData {
-		// use helper to check if the field exists in existingProj
-		if IsFieldAllowed(existingProj, key) {
-			updatedData[key] = value
-		} else {
-			RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to update project: %v", err))
+	// Validate new owner if provided in update data
+	if newOwner, ok := updateData["owner"]; ok {
+		ownerID, ok := newOwner.(float64) // Assuming JSON numbers are decoded as float64
+		if !ok {
+			RespondWithError(context, http.StatusBadRequest, "Invalid owner id format")
+			return
+		}
+		username, err := database.GetUsernameById(int64(ownerID))
+		if err != nil || username == "" {
+			RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Invalid owner id: %v", ownerID))
 			return
 		}
 	}
 
+	// Filter and validate update fields
+	updatedData := make(map[string]interface{})
+	for key, value := range updateData {
+		if IsFieldAllowed(existingProj, key) {
+			updatedData[key] = value
+		} else {
+			RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Field '%v' is not allowed for updates", key))
+			return
+		}
+	}
+
+	// Update the project in the database
 	err = database.QueryUpdateProject(id, updatedData)
 	if err != nil {
 		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Error updating project: %v", err))
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"message": "Project updated successfully", "project": id})
+
+	context.JSON(http.StatusOK, gin.H{
+		"message": "Project updated successfully",
+		"project": id,
+	})
 }
