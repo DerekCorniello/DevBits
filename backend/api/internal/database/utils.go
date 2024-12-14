@@ -58,6 +58,9 @@ func BuildUpdateQuery(updatedData map[string]interface{}) (string, []interface{}
 
 	// dynamically add fields to the query based on the available data in updatedData
 	for key, value := range updatedData {
+        if key == "created_on" {
+            key = "creation_date"
+        }
 		// the following switch statement should work fine for all
 		// items that are, or can be strings,
 		// I feel like this may look stupid now, but will revisit

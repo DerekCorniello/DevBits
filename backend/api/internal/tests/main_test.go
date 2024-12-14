@@ -89,12 +89,23 @@ func (tc *TestCase) Run(t *testing.T) {
 }
 
 func TestAPI(t *testing.T) {
-	// put all tests cases together
-	tests := append(main_tests, append(user_tests, append(project_tests, append(comment_tests, post_tests...)...)...)...)
+	tests := map[string][]TestCase{
+		"Main Tests":    main_tests,
+		"User Tests":    user_tests,
+		"Project Tests": project_tests,
+		"Comment Tests": comment_tests,
+		"Post Tests":    post_tests,
+	}
 
-	for _, test := range tests {
-		t.Run(test.Method+" "+test.Endpoint, func(t *testing.T) {
-			test.Run(t)
+	// iterate through categories and run tests in parallel within each category
+	for category, testCases := range tests {
+		t.Run(category, func(t *testing.T) {
+            t.Parallel() // run the test in parallel
+			for _, test := range testCases {
+				t.Run(test.Method+" "+test.Endpoint, func(t *testing.T) {
+					test.Run(t)
+				})
+			}
 		})
 	}
 }

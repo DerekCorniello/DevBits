@@ -27,10 +27,10 @@ CREATE TABLE UserLoginInfo (
 CREATE TABLE Users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username VARCHAR(50) UNIQUE NOT NULL,
-    profile_pic TEXT,
+    picture TEXT,
     bio TEXT,
     links JSON,
-    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    creation_date TIMESTAMP NOT NULL
 );
 
 -- Projects Table
