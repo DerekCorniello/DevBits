@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-    "time"
+	"net/http"
+	"slices"
+	"time"
 
 	"backend/api/internal/types"
 )
@@ -57,7 +59,7 @@ func QueryCreateUser(user *types.User) error {
 		return fmt.Errorf("Failed to marshal links for user '%v': %v", user.Username, err)
 	}
 
-    currentTime := time.Now().Format("2006-01-02 15:04:05")
+	currentTime := time.Now().Format("2006-01-02 15:04:05")
 
 	query := `INSERT INTO Users (username, picture, bio, links, creation_date)
 	VALUES (?, ?, ?, ?, ?);`
@@ -94,13 +96,13 @@ func QueryDeleteUser(username string) (int16, error) {
 
 func QueryUpdateUser(username string, updatedData map[string]interface{}) error {
 
-    newUsername, usernameExists := updatedData["username"]
-    usernameStr, parseOk := newUsername.(string);
+	newUsername, usernameExists := updatedData["username"]
+	usernameStr, parseOk := newUsername.(string)
 
-    // if there is a new username provided, ensure it is not empty
-    if usernameExists && parseOk && usernameStr == ""{
-        return fmt.Errorf("Updated username cannot be empty!")
-    }
+	// if there is a new username provided, ensure it is not empty
+	if usernameExists && parseOk && usernameStr == "" {
+		return fmt.Errorf("Updated username cannot be empty!")
+	}
 
 	query := `UPDATE Users SET `
 	var args []interface{}
@@ -135,14 +137,29 @@ func GetUserIdByUsername(username string) (int, error) {
 	return userID, nil
 }
 
-func QueryGetUsersFollowers(username string) ([]string, error) {
+func QueryGetUsersFollowersUsernames(username string) ([]string, int, error) {
 	userID, err := GetUserIdByUsername(username)
 	if err != nil {
-		return nil, err
+		return nil, http.StatusInternalServerError, err
 	}
 
 	query := `
-        SELECT u.username 
+        SELECT u.username
+        FROM Users u
+        JOIN UserFollows uf ON u.id = uf.follower_id
+        WHERE uf.follows_id = ?`
+
+	return getUsersFollowingOrFollowersUsernames(query, userID)
+}
+
+func QueryGetUsersFollowers(username string) ([]int, int, error) {
+	userID, err := GetUserIdByUsername(username)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	query := `
+        SELECT u.id 
         FROM Users u
         JOIN UserFollows uf ON u.id = uf.follower_id
         WHERE uf.follows_id = ?`
@@ -150,10 +167,25 @@ func QueryGetUsersFollowers(username string) ([]string, error) {
 	return getUsersFollowingOrFollowers(query, userID)
 }
 
-func QueryGetUsersFollowing(username string) ([]string, error) {
+func QueryGetUsersFollowing(username string) ([]int, int, error) {
 	userID, err := GetUserIdByUsername(username)
 	if err != nil {
-		return nil, err
+		return nil, http.StatusNotFound, err
+	}
+
+	query := `
+        SELECT u.id 
+        FROM Users u
+        JOIN UserFollows uf ON u.id = uf.follows_id
+        WHERE uf.follower_id = ?`
+
+	return getUsersFollowingOrFollowers(query, userID)
+}
+
+func QueryGetUsersFollowingUsernames(username string) ([]string, int, error) {
+	userID, err := GetUserIdByUsername(username)
+	if err != nil {
+		return nil, http.StatusNotFound, err
 	}
 
 	query := `
@@ -162,13 +194,36 @@ func QueryGetUsersFollowing(username string) ([]string, error) {
         JOIN UserFollows uf ON u.id = uf.follows_id
         WHERE uf.follower_id = ?`
 
-	return getUsersFollowingOrFollowers(query, userID)
+	return getUsersFollowingOrFollowersUsernames(query, userID)
 }
 
-func getUsersFollowingOrFollowers(query string, userID int) ([]string, error) {
+func getUsersFollowingOrFollowers(query string, userID int) ([]int, int, error) {
 	rows, err := ExecQuery(query, userID)
 	if err != nil {
-		return nil, err
+		return nil, http.StatusNotFound, err
+	}
+	defer rows.Close()
+
+	var users []int
+	for rows.Next() {
+		var username int
+		if err := rows.Scan(&username); err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
+		users = append(users, username)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	return users, http.StatusOK, nil
+}
+
+func getUsersFollowingOrFollowersUsernames(query string, userID int) ([]string, int, error) {
+	rows, err := ExecQuery(query, userID)
+	if err != nil {
+		return nil, http.StatusNotFound, err
 	}
 	defer rows.Close()
 
@@ -176,14 +231,43 @@ func getUsersFollowingOrFollowers(query string, userID int) ([]string, error) {
 	for rows.Next() {
 		var username string
 		if err := rows.Scan(&username); err != nil {
-			return nil, err
+			return nil, http.StatusInternalServerError, err
 		}
 		users = append(users, username)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, err
+		return nil, http.StatusInternalServerError, err
 	}
 
-	return users, nil
+	return users, http.StatusOK, nil
+}
+
+func CreateNewFollow(user string, newFollow string) (int, error) {
+	userID, err := GetUserIdByUsername(user)
+	if err != nil {
+		return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'.", user)
+	}
+
+	newFollowID, err := GetUserIdByUsername(newFollow)
+	if err != nil {
+		return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'.", newFollow)
+	}
+
+	currFollowers, httpcode, err := QueryGetUsersFollowing(user)
+	if err != nil {
+		return httpcode, fmt.Errorf("Cannot find user with username '%v'.", user)
+	}
+	if slices.Contains(currFollowers, newFollowID) {
+		return http.StatusConflict, fmt.Errorf("User is already followed!")
+	}
+
+	query := `INSERT INTO UserFollows (follower_id, follows_id) VALUES (?, ?)`
+	_, err = ExecQuery(query, userID, newFollowID)
+
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred adding follower: %v", err)
+	}
+
+	return http.StatusOK, nil
 }
