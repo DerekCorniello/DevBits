@@ -57,7 +57,7 @@ func CreateUser(context *gin.Context) {
 		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to create user: %v", err))
 		return
 	}
-context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Created new user: '%s'", newUser.Username)})
+	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Created new user: '%s'", newUser.Username)})
 }
 
 func DeleteUser(context *gin.Context) {
@@ -123,28 +123,28 @@ func UpdateUserInfo(context *gin.Context) {
 		return
 	}
 
-    var validUser *types.User
-    newUsername, usernameExists := updatedData["username"]
-    usernameStr, parseOk := newUsername.(string);
+	var validUser *types.User
+	newUsername, usernameExists := updatedData["username"]
+	usernameStr, parseOk := newUsername.(string)
 
-    // if there is a new username provided, ensure it is not empty
-    if usernameExists && parseOk && usernameStr != ""{
-        validUser, err = database.QueryUsername(usernameStr)
-    } else {
-        validUser, err = database.QueryUsername(username)
-    }
-    if err != nil {
-        RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Error validating updated data: %v", err))
-    }
+	// if there is a new username provided, ensure it is not empty
+	if usernameExists && parseOk && usernameStr != "" {
+		validUser, err = database.QueryUsername(usernameStr)
+	} else {
+		validUser, err = database.QueryUsername(username)
+	}
+	if err != nil {
+		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Error validating updated data: %v", err))
+	}
 	context.JSON(http.StatusOK, gin.H{"message": "User updated successfully.", "user": validUser})
 }
 
 func GetUsersFollowers(context *gin.Context) {
 	username := context.Param("username")
 
-	followers, err := database.QueryGetUsersFollowers(username)
-	if err != nil { // see above func, may be able to handle 404 vs 500?
-		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to fetch followers: %v", err))
+	followers, httpcode, err := database.QueryGetUsersFollowers(username)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to fetch followers: %v", err))
 		return
 	}
 
@@ -154,11 +154,59 @@ func GetUsersFollowers(context *gin.Context) {
 func GetUsersFollowing(context *gin.Context) {
 	username := context.Param("username")
 
-	following, err := database.QueryGetUsersFollowing(username)
-	if err != nil { // see above func, may be able to handle 404 vs 500?
-		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to fetch following: %v", err))
+	following, httpcode, err := database.QueryGetUsersFollowing(username)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to fetch following: %v", err))
 		return
 	}
 
 	context.JSON(http.StatusOK, following)
+}
+
+func GetUsersFollowersUsernames(context *gin.Context) {
+	username := context.Param("username")
+
+	followers, httpcode, err := database.QueryGetUsersFollowersUsernames(username)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to fetch followers: %v", err))
+		return
+	}
+
+	context.JSON(http.StatusOK, followers)
+}
+
+func GetUsersFollowingUsernames(context *gin.Context) {
+	username := context.Param("username")
+
+	following, httpcode, err := database.QueryGetUsersFollowingUsernames(username)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to fetch following: %v", err))
+		return
+	}
+
+	context.JSON(http.StatusOK, following)
+}
+
+func FollowUser(context *gin.Context) {
+	username := context.Param("username")
+	newFollow := context.Param("new_follow")
+
+	httpcode, err := database.CreateNewFollow(username, newFollow)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to add follower: %v", err))
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v now follows %v", username, newFollow)})
+}
+
+func UnfollowUser(context *gin.Context) {
+	username := context.Param("username")
+	unFollow := context.Param("unfollow")
+
+	httpcode, err := database.RemoveFollow(username, unFollow)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to remove follower: %v", err))
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v unfollowed %v", username, unFollow)})
 }

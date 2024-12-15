@@ -58,9 +58,9 @@ func BuildUpdateQuery(updatedData map[string]interface{}) (string, []interface{}
 
 	// dynamically add fields to the query based on the available data in updatedData
 	for key, value := range updatedData {
-        if key == "created_on" {
-            key = "creation_date"
-        }
+		if key == "created_on" {
+			key = "creation_date"
+		}
 		// the following switch statement should work fine for all
 		// items that are, or can be strings,
 		// I feel like this may look stupid now, but will revisit
@@ -83,6 +83,6 @@ func BuildUpdateQuery(updatedData map[string]interface{}) (string, []interface{}
 	// continue formatting query
 	// get rid of trailing space and comma
 	query = query[:len(query)-2]
-    // NOTICE we DO NOT add the `WHERE` clause here
+	// NOTICE we DO NOT add the `WHERE` clause here
 	return query, args, nil
 }
