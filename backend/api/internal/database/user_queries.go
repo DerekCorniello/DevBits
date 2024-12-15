@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+    "time"
 
 	"backend/api/internal/types"
 )
@@ -26,7 +27,7 @@ func GetUsernameById(id int64) (string, error) {
 }
 
 func QueryUsername(username string) (*types.User, error) {
-	query := `SELECT username, profile_pic, bio, links, creation_date FROM Users WHERE username = ?;`
+	query := `SELECT username, picture, bio, links, creation_date FROM Users WHERE username = ?;`
 
 	row := DB.QueryRow(query, username)
 
@@ -53,15 +54,17 @@ func QueryUsername(username string) (*types.User, error) {
 func QueryCreateUser(user *types.User) error {
 	linksJSON, err := json.Marshal(user.Links)
 	if err != nil {
-		return fmt.Errorf("Failed to marshal links for user `%v`: %v", user.Username, err)
+		return fmt.Errorf("Failed to marshal links for user '%v': %v", user.Username, err)
 	}
 
-	query := `INSERT INTO Users (username, profile_pic, bio, links)
-	VALUES (?, ?, ?, ?);`
+    currentTime := time.Now().Format("2006-01-02 15:04:05")
 
-	res, err := DB.Exec(query, user.Username, user.Picture, user.Bio, string(linksJSON))
+	query := `INSERT INTO Users (username, picture, bio, links, creation_date)
+	VALUES (?, ?, ?, ?, ?);`
+
+	res, err := DB.Exec(query, user.Username, user.Picture, user.Bio, string(linksJSON), currentTime)
 	if err != nil {
-		return fmt.Errorf("Failed to create user `%v`: %v", user.Username, err)
+		return fmt.Errorf("Failed to create user '%v': %v", user.Username, err)
 	}
 
 	_, err = res.LastInsertId()
@@ -76,7 +79,7 @@ func QueryDeleteUser(username string) (int16, error) {
 	query := `DELETE from Users WHERE username=?;`
 	res, err := DB.Exec(query, username)
 	if err != nil {
-		return 400, fmt.Errorf("Failed to delete user `%v`: %v", username, err)
+		return 400, fmt.Errorf("Failed to delete user '%v': %v", username, err)
 	}
 
 	RowsAffected, err := res.RowsAffected()
@@ -90,6 +93,15 @@ func QueryDeleteUser(username string) (int16, error) {
 }
 
 func QueryUpdateUser(username string, updatedData map[string]interface{}) error {
+
+    newUsername, usernameExists := updatedData["username"]
+    usernameStr, parseOk := newUsername.(string);
+
+    // if there is a new username provided, ensure it is not empty
+    if usernameExists && parseOk && usernameStr == ""{
+        return fmt.Errorf("Updated username cannot be empty!")
+    }
+
 	query := `UPDATE Users SET `
 	var args []interface{}
 
@@ -106,7 +118,7 @@ func QueryUpdateUser(username string, updatedData map[string]interface{}) error 
 		return fmt.Errorf("Error checking rows affected: %v", err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("No user found with username `%s` to update", username)
+		return fmt.Errorf("No user found with username '%s' to update", username)
 	}
 
 	return nil
@@ -118,7 +130,7 @@ func GetUserIdByUsername(username string) (int, error) {
 	row := DB.QueryRow(query, username)
 	err := row.Scan(&userID)
 	if err != nil { // TODO: Is there a way this can return a 404 vs 500 error? this could be a 404 or 500, but we cannot tell from an err here
-		return -1, fmt.Errorf("Error fetching user ID for username `%v` (this usually means username does not exist) : %v", username, err)
+		return -1, fmt.Errorf("Error fetching user ID for username '%v' (this usually means username does not exist) : %v", username, err)
 	}
 	return userID, nil
 }

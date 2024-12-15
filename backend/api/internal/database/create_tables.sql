@@ -1,15 +1,20 @@
 -- Drop tables if they already exist
-DROP TABLE IF EXISTS CommentLikes;
-DROP TABLE IF EXISTS PostLikes;
-DROP TABLE IF EXISTS ProjectLikes;
-DROP TABLE IF EXISTS ProjectComments;
-DROP TABLE IF EXISTS Comments;
-DROP TABLE IF EXISTS Posts;
-DROP TABLE IF EXISTS ProjectFollows;
-DROP TABLE IF EXISTS UserFollows;
-DROP TABLE IF EXISTS Projects;
-DROP TABLE IF EXISTS Users;
 DROP TABLE IF EXISTS UserLoginInfo;
+
+DROP TABLE IF EXISTS Users;
+DROP TABLE IF EXISTS UserFollows;
+
+DROP TABLE IF EXISTS Projects;
+DROP TABLE IF EXISTS ProjectLikes;
+DROP TABLE IF EXISTS ProjectFollows;
+DROP TABLE IF EXISTS ProjectComments;
+
+DROP TABLE IF EXISTS Posts;
+DROP TABLE IF EXISTS PostLikes;
+DROP TABLE IF EXISTS PostComments;
+
+DROP TABLE IF EXISTS Comments;
+DROP TABLE IF EXISTS CommentLikes;
 
 -- UserLoginInfo
 CREATE TABLE UserLoginInfo (
@@ -22,10 +27,10 @@ CREATE TABLE UserLoginInfo (
 CREATE TABLE Users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username VARCHAR(50) UNIQUE NOT NULL,
-    profile_pic TEXT,
+    picture TEXT,
     bio TEXT,
     links JSON,
-    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    creation_date TIMESTAMP NOT NULL
 );
 
 -- Projects Table
@@ -38,7 +43,7 @@ CREATE TABLE Projects (
     links JSON,
     tags JSON,
     owner INTEGER NOT NULL,
-    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    creation_date TIMESTAMP NOT NULL,
     FOREIGN KEY (owner) REFERENCES Users(id) ON DELETE CASCADE
 );
 
@@ -56,12 +61,20 @@ CREATE TABLE Posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     content TEXT NOT NULL,
     project_id INTEGER NOT NULL,
-    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    creation_date TIMESTAMP NOT NULL,
     user_id INTEGER NOT NULL,
     likes INTEGER DEFAULT 0,
-    comments JSON,
     FOREIGN KEY (project_id) REFERENCES Projects(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+);
+
+-- Project Comments Table (Normalizing comments relationship)
+CREATE TABLE PostComments (
+    post_id INTEGER NOT NULL,
+    comment_id INTEGER NOT NULL,
+    FOREIGN KEY (post_id) REFERENCES Posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (comment_id) REFERENCES Comments(id) ON DELETE CASCADE,
+    PRIMARY KEY (post_id, comment_id)
 );
 
 -- Comments Table
@@ -70,7 +83,7 @@ CREATE TABLE Comments (
     content TEXT NOT NULL,
     post_id INTEGER NOT NULL,
     parent_comment_id INTEGER,
-    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    creation_date TIMESTAMP NOT NULL,
     user_id INTEGER NOT NULL,
     FOREIGN KEY (post_id) REFERENCES Posts(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_comment_id) REFERENCES Comments(id) ON DELETE CASCADE,

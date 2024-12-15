@@ -22,8 +22,9 @@ func main() {
 	logger.InitLogger()
 
 	router := gin.Default()
+	router.HandleMethodNotAllowed = true
 
-    router.GET("health", HealthCheck)
+    router.GET("/health", HealthCheck)
 
 	router.GET("/users/:username", handlers.GetUserByUsername)
     router.POST("/users", handlers.CreateUser)

@@ -57,7 +57,7 @@ func CreateUser(context *gin.Context) {
 		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to create user: %v", err))
 		return
 	}
-	context.IndentedJSON(http.StatusCreated, newUser)
+context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Created new user: '%s'", newUser.Username)})
 }
 
 func DeleteUser(context *gin.Context) {
@@ -76,9 +76,7 @@ func DeleteUser(context *gin.Context) {
 		RespondWithError(context, httpCode, fmt.Sprintf("Failed to delete user: %v", err))
 		return
 	}
-	context.IndentedJSON(http.StatusOK, gin.H{
-		"message": fmt.Sprintf("User %v deleted.", username),
-	})
+	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("User '%v' deleted.", username)})
 }
 
 func UpdateUserInfo(context *gin.Context) {
@@ -125,7 +123,20 @@ func UpdateUserInfo(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, gin.H{"message": "User updated successfully", "user": updatedData})
+    var validUser *types.User
+    newUsername, usernameExists := updatedData["username"]
+    usernameStr, parseOk := newUsername.(string);
+
+    // if there is a new username provided, ensure it is not empty
+    if usernameExists && parseOk && usernameStr != ""{
+        validUser, err = database.QueryUsername(usernameStr)
+    } else {
+        validUser, err = database.QueryUsername(username)
+    }
+    if err != nil {
+        RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Error validating updated data: %v", err))
+    }
+	context.JSON(http.StatusOK, gin.H{"message": "User updated successfully.", "user": validUser})
 }
 
 func GetUsersFollowers(context *gin.Context) {

@@ -24,7 +24,7 @@ type Project struct {
 	Likes        int64     `json:"likes"`
 	Tags         []string  `json:"tags"`
 	Links        []string  `json:"links"`
-	CreationDate time.Time `json:"created_on"`
+	CreationDate time.Time `json:"creation_date"`
 }
 
 type Post struct {
@@ -47,6 +47,6 @@ type Comment struct {
 }
 
 type ErrorResponse struct {
-    Error   string `json:"error"`
-    Message string `json:"message"`
+	Error   string `json:"error"`
+	Message string `json:"message"`
 }
