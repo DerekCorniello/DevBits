@@ -244,29 +244,66 @@ func getUsersFollowingOrFollowersUsernames(query string, userID int) ([]string, 
 }
 
 func CreateNewFollow(user string, newFollow string) (int, error) {
+    userID, err := GetUserIdByUsername(user)
+    if err != nil {
+        return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'.", user)
+    }
+
+    newFollowID, err := GetUserIdByUsername(newFollow)
+    if err != nil {
+        return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'.", newFollow)
+    }
+
+    currFollowers, httpCode, err := QueryGetUsersFollowing(user)
+    if err != nil {
+        return httpCode, fmt.Errorf("Cannot retrieve user's following list: %v", err)
+    }
+
+    if slices.Contains(currFollowers, newFollowID) {
+        return http.StatusConflict, fmt.Errorf("User '%v' is already being followed", newFollow)
+    }
+
+    query := `INSERT INTO UserFollows (follower_id, follows_id) VALUES (?, ?)`
+    rowsAffected, err := ExecUpdate(query, userID, newFollowID)
+    if err != nil {
+        return http.StatusInternalServerError, fmt.Errorf("An error occurred adding follower: %v", err)
+    }
+
+    if rowsAffected == 0 {
+        return http.StatusInternalServerError, fmt.Errorf("Failed to add the follow relationship")
+    }
+
+    return http.StatusOK, nil
+}
+
+func RemoveFollow(user string, unfollow string) (int, error) {
 	userID, err := GetUserIdByUsername(user)
 	if err != nil {
-		return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'.", user)
+		return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'", user)
 	}
 
-	newFollowID, err := GetUserIdByUsername(newFollow)
+	unfollowID, err := GetUserIdByUsername(unfollow)
 	if err != nil {
-		return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'.", newFollow)
+		return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'", unfollow)
 	}
 
-	currFollowers, httpcode, err := QueryGetUsersFollowing(user)
+	currFollowers, httpCode, err := QueryGetUsersFollowing(user)
 	if err != nil {
-		return httpcode, fmt.Errorf("Cannot find user with username '%v'.", user)
-	}
-	if slices.Contains(currFollowers, newFollowID) {
-		return http.StatusConflict, fmt.Errorf("User is already followed!")
+		return httpCode, fmt.Errorf("Error retrieving user's following list: %v", err)
 	}
 
-	query := `INSERT INTO UserFollows (follower_id, follows_id) VALUES (?, ?)`
-	_, err = ExecQuery(query, userID, newFollowID)
+	if !slices.Contains(currFollowers, unfollowID) {
+		return http.StatusConflict, fmt.Errorf("User '%v' is not being followed", unfollow)
+	}
 
+	query := `DELETE FROM UserFollows WHERE follower_id = ? AND follows_id = ?;`
+	rowsAffected, err := ExecUpdate(query, userID, unfollowID)
 	if err != nil {
-		return http.StatusInternalServerError, fmt.Errorf("An error occurred adding follower: %v", err)
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred removing follower: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		return http.StatusConflict, fmt.Errorf("No such follow relationship exists")
 	}
 
 	return http.StatusOK, nil

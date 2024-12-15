@@ -36,6 +36,7 @@ func main() {
 	router.GET("/users/:username/followers/usernames", handlers.GetUsersFollowersUsernames)
 	router.GET("/users/:username/follows/usernames", handlers.GetUsersFollowingUsernames)
     router.POST("users/:username/add_follower/:new_follow", handlers.FollowUser)
+    router.POST("users/:username/remove_follower/:unfollow", handlers.UnfollowUser)
 
     router.GET("/projects/:id", handlers.GetProjectById)
     router.POST("/projects", handlers.CreateProject)
