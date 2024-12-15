@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+    "time"
 
 	"backend/api/internal/types"
 )
@@ -52,10 +53,12 @@ func QueryCreateProject(proj *types.Project) (int64, error) {
 		return -1, err
 	}
 
-	query := `INSERT INTO Projects (name, description, status, links, tags, owner)
-              VALUES (?, ?, ?, ?, ?, ?);`
+    currentTime := time.Now().Format("2006-01-02 15:04:05")
 
-	res, err := DB.Exec(query, proj.Name, proj.Description, proj.Status, string(linksJSON), string(tagsJSON), proj.Owner)
+	query := `INSERT INTO Projects (name, description, status, links, tags, owner, creation_date)
+              VALUES (?, ?, ?, ?, ?, ?, ?);`
+
+	res, err := DB.Exec(query, proj.Name, proj.Description, proj.Status, string(linksJSON), string(tagsJSON), proj.Owner, currentTime)
 	if err != nil {
 		return -1, fmt.Errorf("Failed to create project `%v`: %v", proj.Name, err)
 	}

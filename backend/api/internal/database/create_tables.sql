@@ -43,7 +43,7 @@ CREATE TABLE Projects (
     links JSON,
     tags JSON,
     owner INTEGER NOT NULL,
-    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    creation_date TIMESTAMP NOT NULL,
     FOREIGN KEY (owner) REFERENCES Users(id) ON DELETE CASCADE
 );
 
@@ -61,7 +61,7 @@ CREATE TABLE Posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     content TEXT NOT NULL,
     project_id INTEGER NOT NULL,
-    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    creation_date TIMESTAMP NOT NULL,
     user_id INTEGER NOT NULL,
     likes INTEGER DEFAULT 0,
     FOREIGN KEY (project_id) REFERENCES Projects(id) ON DELETE CASCADE,
@@ -83,7 +83,7 @@ CREATE TABLE Comments (
     content TEXT NOT NULL,
     post_id INTEGER NOT NULL,
     parent_comment_id INTEGER,
-    creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    creation_date TIMESTAMP NOT NULL,
     user_id INTEGER NOT NULL,
     FOREIGN KEY (post_id) REFERENCES Posts(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_comment_id) REFERENCES Comments(id) ON DELETE CASCADE,

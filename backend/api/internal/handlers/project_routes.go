@@ -147,8 +147,15 @@ func UpdateProjectInfo(context *gin.Context) {
 		return
 	}
 
+    updatedProj, err := database.QueryProject(id)
+
+    if err != nil {
+		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Error validating updated project: %v", err))
+		return
+    }
+
 	context.JSON(http.StatusOK, gin.H{
 		"message": "Project updated successfully",
-		"project": id,
+		"project": updatedProj,
 	})
 }
