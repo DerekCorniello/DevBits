@@ -243,7 +243,7 @@ func getUsersFollowingOrFollowersUsernames(query string, userID int) ([]string, 
 	return users, http.StatusOK, nil
 }
 
-func CreateNewFollow(user string, newFollow string) (int, error) {
+func CreateNewUserFollow(user string, newFollow string) (int, error) {
     userID, err := GetUserIdByUsername(user)
     if err != nil {
         return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'.", user)
@@ -276,7 +276,7 @@ func CreateNewFollow(user string, newFollow string) (int, error) {
     return http.StatusOK, nil
 }
 
-func RemoveFollow(user string, unfollow string) (int, error) {
+func RemoveUserFollow(user string, unfollow string) (int, error) {
 	userID, err := GetUserIdByUsername(user)
 	if err != nil {
 		return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'", user)

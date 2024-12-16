@@ -12,7 +12,7 @@ import (
 )
 
 func GetProjectById(context *gin.Context) {
-	strId := context.Param("id")
+	strId := context.Param("project_id")
 	id, err := strconv.Atoi(strId)
 	if err != nil {
 		return
@@ -61,7 +61,7 @@ func CreateProject(context *gin.Context) {
 }
 
 func DeleteProject(context *gin.Context) {
-	strId := context.Param("id")
+	strId := context.Param("project_id")
 	id, err := strconv.Atoi(strId)
 	if err != nil {
 		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse project id: %v", err))
@@ -91,7 +91,7 @@ func UpdateProjectInfo(context *gin.Context) {
 	var updateData map[string]interface{}
 
 	// Parse project ID from the URL
-	id, err := strconv.Atoi(context.Param("id"))
+	id, err := strconv.Atoi(context.Param("project_id"))
 	if err != nil {
 		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse project id: %v", err))
 		return
@@ -147,15 +147,97 @@ func UpdateProjectInfo(context *gin.Context) {
 		return
 	}
 
-    updatedProj, err := database.QueryProject(id)
+	updatedProj, err := database.QueryProject(id)
 
-    if err != nil {
+	if err != nil {
 		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Error validating updated project: %v", err))
 		return
-    }
+	}
 
 	context.JSON(http.StatusOK, gin.H{
 		"message": "Project updated successfully",
 		"project": updatedProj,
 	})
+}
+
+func GetProjectFollowers(context *gin.Context) {
+	projectId := context.Param("project_id")
+	intProjectId, err := strconv.Atoi(projectId)
+
+	if err != nil {
+		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse project id: %V", err))
+	}
+
+	followers, httpcode, err := database.QueryGetProjectFollowers(intProjectId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to fetch followers: %v", err))
+		return
+	}
+
+	context.JSON(http.StatusOK, followers)
+}
+
+func GetProjectFollowing(context *gin.Context) {
+	username := context.Param("username")
+
+	following, httpcode, err := database.QueryGetProjectFollowing(username)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to fetch following: %v", err))
+		return
+	}
+
+	context.JSON(http.StatusOK, following)
+}
+
+func GetProjectFollowersUsernames(context *gin.Context) {
+	projectId := context.Param("project_id")
+	intProjectId, err := strconv.Atoi(projectId)
+
+	if err != nil {
+		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse project id: %V", err))
+	}
+
+	followers, httpcode, err := database.QueryGetProjectFollowersUsernames(intProjectId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to fetch followers: %v", err))
+		return
+	}
+
+	context.JSON(http.StatusOK, followers)
+}
+
+func GetProjectFollowingUsernames(context *gin.Context) {
+	username := context.Param("username")
+
+	following, httpcode, err := database.QueryGetProjectFollowingUsernames(username)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to fetch following: %v", err))
+		return
+	}
+
+	context.JSON(http.StatusOK, following)
+}
+
+func FollowProject(context *gin.Context) {
+	username := context.Param("username")
+	projectId := context.Param("project_id")
+
+	httpcode, err := database.CreateNewProjectFollow(username, projectId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to add follower: %v", err))
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v now follows %v", username, projectId)})
+}
+
+func UnfollowProject(context *gin.Context) {
+	username := context.Param("username")
+	projectId := context.Param("project_id")
+
+	httpcode, err := database.RemoveProjectFollow(username, projectId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to remove follower: %v", err))
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v unfollowed %v", username, projectId)})
 }
