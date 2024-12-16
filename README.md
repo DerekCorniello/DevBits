@@ -99,7 +99,7 @@ npm install
 #### 3. Start the app
 
 ```bash
-npx expo start
+npm run frontend
 ```
 
 In the output, you'll find options to open the app in a
