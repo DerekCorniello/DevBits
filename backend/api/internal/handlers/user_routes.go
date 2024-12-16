@@ -191,7 +191,7 @@ func FollowUser(context *gin.Context) {
 	username := context.Param("username")
 	newFollow := context.Param("new_follow")
 
-	httpcode, err := database.CreateNewFollow(username, newFollow)
+	httpcode, err := database.CreateNewUserFollow(username, newFollow)
 	if err != nil {
 		RespondWithError(context, httpcode, fmt.Sprintf("Failed to add follower: %v", err))
 		return
@@ -203,7 +203,7 @@ func UnfollowUser(context *gin.Context) {
 	username := context.Param("username")
 	unFollow := context.Param("unfollow")
 
-	httpcode, err := database.RemoveFollow(username, unFollow)
+	httpcode, err := database.RemoveUserFollow(username, unFollow)
 	if err != nil {
 		RespondWithError(context, httpcode, fmt.Sprintf("Failed to remove follower: %v", err))
 		return
