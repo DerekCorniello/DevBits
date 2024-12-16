@@ -8,6 +8,7 @@ import (
 	"backend/api/internal/handlers"
 	"backend/api/internal/logger"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -15,7 +16,7 @@ import (
 const DEBUG bool = true
 
 func HealthCheck(context *gin.Context) {
-    context.JSON(200, gin.H{"message": "API is running!"})
+	context.JSON(200, gin.H{"message": "API is running!"})
 }
 
 func main() {
@@ -24,10 +25,18 @@ func main() {
 	router := gin.Default()
 	router.HandleMethodNotAllowed = true
 
-    router.GET("/health", HealthCheck)
+	// Apply CORS middleware to the router
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:8081"}, // Add your frontend URL (React Native or Web app)
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true, // Allow cookies or authentication headers
+	}))
+
+	router.GET("/health", HealthCheck)
 
 	router.GET("/users/:username", handlers.GetUserByUsername)
-    router.POST("/users", handlers.CreateUser)
+	router.POST("/users", handlers.CreateUser)
 	router.PUT("/users/:username", handlers.UpdateUserInfo)
 	router.DELETE("/users/:username", handlers.DeleteUser)
 
@@ -35,21 +44,23 @@ func main() {
 	router.GET("/users/:username/follows", handlers.GetUsersFollowing)
 	router.GET("/users/:username/followers/usernames", handlers.GetUsersFollowersUsernames)
 	router.GET("/users/:username/follows/usernames", handlers.GetUsersFollowingUsernames)
-    router.POST("/users/:username/follow/:new_follow", handlers.FollowUser)
-    router.POST("/users/:username/unfollow/:unfollow", handlers.UnfollowUser)
 
-    router.GET("/projects/:project_id", handlers.GetProjectById)
-    router.POST("/projects", handlers.CreateProject)
+  router.POST("/users/:username/follow/:new_follow", handlers.FollowUser)
+  router.POST("/users/:username/unfollow/:unfollow", handlers.UnfollowUser)
+
+  router.GET("/projects/:project_id", handlers.GetProjectById)
+  router.POST("/projects", handlers.CreateProject)
 	router.PUT("/projects/:project_id", handlers.UpdateProjectInfo)
-    router.DELETE("/projects/:project_id", handlers.DeleteProject)
+  router.DELETE("/projects/:project_id", handlers.DeleteProject)
 
 	router.GET("/projects/:project_id/followers", handlers.GetProjectFollowers)
-    router.GET("/projects/follows/:username", handlers.GetProjectFollowing)
+  router.GET("/projects/follows/:username", handlers.GetProjectFollowing)
 	router.GET("/projects/:project_id/followers/usernames", handlers.GetProjectFollowersUsernames)
-    router.GET("/projects/follows/:username/usernames", handlers.GetProjectFollowingUsernames)
+  router.GET("/projects/follows/:username/usernames", handlers.GetProjectFollowingUsernames)
 
-    router.POST("/projects/:username/follow/:project_id", handlers.FollowProject)
-    router.POST("/projects/:username/unfollow/:project_id", handlers.UnfollowProject)
+  router.POST("/projects/:username/follow/:project_id", handlers.FollowProject)
+  router.POST("/projects/:username/unfollow/:project_id", handlers.UnfollowProject)
+
 
 	var dbinfo, dbtype string
 	if DEBUG {

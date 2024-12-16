@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Animated } from "react-native";
 import { Card, Icon, CheckBox } from "@rneui/themed";
 import { ThemedText } from "@/components/ThemedText";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { PostProps } from "@/constants/Types";
 
 function Like() {
   const [checked, setChecked] = useState(false);
@@ -68,53 +69,44 @@ function Comment() {
   );
 }
 
-export type PostProps = {
-  ID: number;
-  User: string;
-  Project: number;
-  Likes: number;
-  Content: string;
-  CreationDate: Date;
-  Comments: number[];
-};
-
 export function Post({
-  ID,
-  User,
-  Project,
-  Likes,
-  Content,
-  Comments,
-  CreationDate,
+  id,
+  user,
+  project,
+  likes,
+  content,
+  comments,
+  created_on,
 }: PostProps) {
   const cardBackgroundColor = useThemeColor(
     { light: "light grey", dark: "#151515" },
     "background"
   );
+  let CreationDate = new Date(created_on);
   return (
     <Card
       containerStyle={[styles.card, { backgroundColor: cardBackgroundColor }]}
     >
       <View style={styles.header}>
         <ThemedText type="default" style={styles.username}>
-          {User}
+          {user}
         </ThemedText>
         <ThemedText type="subtitle" style={styles.project}>
-          Stream {Project}
+          Stream {project}
         </ThemedText>
       </View>
       <ThemedText type="default" style={styles.content}>
-        {Content}
+        {content}
       </ThemedText>
       <Card.Divider style={styles.divider} />
       <View style={styles.footer}>
         <View style={styles.actionContainer}>
           <Like />
-          <Text style={styles.bottomText}>{Likes} likes</Text>
+          <Text style={styles.bottomText}>{likes} likes</Text>
         </View>
         <View style={styles.actionContainer}>
           <Comment />
-          <Text style={styles.bottomText}>{Comments.length} bits</Text>
+          <Text style={styles.bottomText}>{comments.length} bits</Text>
         </View>
       </View>
       <Text style={styles.date}>

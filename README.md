@@ -2,7 +2,7 @@
 
 ## Goal: Create an X and LinkedIn crossover for posting real content about your projects, semi-formally
 
-### Outline:
+### Outline
 
 Projects are the baseline of the app, you must have a project to post.
 
@@ -14,14 +14,14 @@ Some quirky names for things (frontend only)
 - Posts about projects are called 'Byte's
 - Comments are called 'Bit's
 
-### Tech Stack:
+### Tech Stack
 
 - Backend/API in Go, Elixir/Scala if need big data processing
 - Frontend: ReactNative and Expo
 - Database: PostgreSQL or MySQL
 - Host: On AWS, full system design pending
 
-## Local Testing:
+## Local Testing
 
 ### Backend Testing
 
@@ -35,7 +35,7 @@ Install the following packages:
 Change into the project directory:
 
 ```bash
-$ cd /path/to/DevBits
+cd /path/to/DevBits
 ```
 
 #### 2. Start the Database
@@ -43,17 +43,19 @@ $ cd /path/to/DevBits
 1. Open a terminal and navigate to the database directory:
 
    ```bash
-   $ cd backend/api/internal/database
+   cd backend/api/internal/database
    ```
+
 2. Launch the SQLite database:
 
    ```bash
-   $ sqlite3 dev.sqlite3
+   sqlite3 dev.sqlite3
    ```
+
 3. (Optional) Open the `create_tables.sql` file in a new terminal for reference:
 
    ```bash
-   $ nvim create_tables.sql
+   nvim create_tables.sql
    ```
 
 #### 3. Start the API
@@ -61,12 +63,13 @@ $ cd /path/to/DevBits
 1. Open another terminal and navigate to the backend directory:
 
    ```bash
-   $ cd backend
+   cd backend
    ```
+
 2. Run the API:
 
    ```bash
-   $ go run ./api
+   go run ./api
    ```
 
 That's it! You're ready to start working with the DevBits API and database.
@@ -79,12 +82,12 @@ Install the following packages:
 
 - [**Node**](https://nodejs.org/en/download/package-manager) (for running the React Native App)
 
-#### 1. Navigate to the Project Root
+#### 1. Navigate to the DevBits Frontend
 
 Change into the project directory:
 
 ```bash
-cd /path/to/DevBits
+cd /path/to/DevBits/frontend
 ```
 
 #### 2. Check required packages are installed
@@ -96,7 +99,7 @@ npm install
 #### 3. Start the app
 
 ```bash
-npx expo start
+npm run frontend
 ```
 
 In the output, you'll find options to open the app in a
@@ -105,3 +108,19 @@ In the output, you'll find options to open the app in a
 - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+
+### Run app
+
+#### 1. Navigate to the DevBits frontend (required to run npm commands)
+
+Change into the project directory:
+
+```bash
+cd /path/to/DevBits/frontend
+```
+
+#### 2. Run all required commands
+
+```bash
+npm run all
+```
