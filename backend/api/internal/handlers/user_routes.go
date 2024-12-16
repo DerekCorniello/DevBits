@@ -172,7 +172,7 @@ func GetUsersFollowersUsernames(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, followers)
+    context.JSON(http.StatusOK, gin.H{"message": "Successfully got followers", "followers":followers})
 }
 
 func GetUsersFollowingUsernames(context *gin.Context) {
@@ -184,7 +184,7 @@ func GetUsersFollowingUsernames(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, following)
+    context.JSON(http.StatusOK, gin.H{"message": "Successfully got following", "following": following})
 }
 
 func FollowUser(context *gin.Context) {
