@@ -3,7 +3,9 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start-frontend": "expo start",
+    "start-db": "cd ../backend/api/internal/database & sqlite3 dev.sqlite3",
+    "start-backend": "cd ../backend & go run ./api",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
