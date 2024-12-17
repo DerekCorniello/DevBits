@@ -1,3 +1,7 @@
+// The logger package helps set up the api system's logging system
+// this package is used in conjunction with all of the other packages
+// to provide both the backend and frontend good details on processes
+// and any errors.
 package logger
 
 import (

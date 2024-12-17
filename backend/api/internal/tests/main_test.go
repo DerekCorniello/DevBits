@@ -1,3 +1,9 @@
+// The test package includes all of the functionality to 
+// test the api in any way we see fit.
+//
+// it uses all of the packages, along with the 
+// testing and assert packages to ensure that the tests are
+// properly ran effectively and return the correct results
 package tests
 
 import (
