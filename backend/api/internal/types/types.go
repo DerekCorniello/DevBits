@@ -1,11 +1,15 @@
+// the types package is used for creating types that will be
+// used multiple times across many packages, so we can make
+// use of all of the types in a single package
+//
+// Some of the structs that will be used to interface between
+// frontend, api, and db. This will allow for good handling of
+// types
 package types
 
 import (
 	"time"
 )
-
-// Some of the structs that will be used to interface between
-// frontend, api, and db. Go has good handling for this
 
 type User struct {
 	Username     string    `json:"username" binding:"required"`

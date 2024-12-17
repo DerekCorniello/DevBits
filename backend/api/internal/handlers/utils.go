@@ -1,3 +1,10 @@
+// The handlers package includes all of the functionality to
+// process http requests through the use of gin and its contexts
+// in order for the workflow to process through to the database
+// efficiently and effectively.
+//
+// it mainly uses net/http and gin-gonic/gin as packages to
+// efficiently process http requests
 package handlers
 
 import (
