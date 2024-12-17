@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "frontend": "expo start",
-    "db": "cd ../backend/api/internal/database & sqlite3 dev.sqlite3",
-    "backend": "cd ../backend & go run ./api",
+    "db": "cd ../backend/api/internal/database && sqlite3 dev.sqlite3",
+    "backend": "cd ../backend && go run ./api",
     "all": "concurrently --kill-others-on-fail --names \"FRONTEND,DB,BACKEND\" --prefix-colors \"blue,cyan,green\" \"npm run frontend\" \"npm run db\" \"npm run backend\"",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
