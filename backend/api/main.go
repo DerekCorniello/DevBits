@@ -56,10 +56,10 @@ func main() {
 	router.GET("/projects/:project_id/followers", handlers.GetProjectFollowers)
     router.GET("/projects/follows/:username", handlers.GetProjectFollowing)
 	router.GET("/projects/:project_id/followers/usernames", handlers.GetProjectFollowersUsernames)
+    router.GET("/projects/follows/:username/names", handlers.GetProjectFollowingNames)
 
     router.POST("/projects/:username/follow/:project_id", handlers.FollowProject)
     router.POST("/projects/:username/unfollow/:project_id", handlers.UnfollowProject)
-    router.GET("/projects/follows/:username/names", handlers.GetProjectFollowingUsernames)
 
 
 	var dbinfo, dbtype string

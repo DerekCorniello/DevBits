@@ -206,10 +206,10 @@ func GetProjectFollowersUsernames(context *gin.Context) {
 	context.JSON(http.StatusOK, followers)
 }
 
-func GetProjectFollowingUsernames(context *gin.Context) {
+func GetProjectFollowingNames(context *gin.Context) {
 	username := context.Param("username")
 
-	following, httpcode, err := database.QueryGetProjectFollowingUsernames(username)
+	following, httpcode, err := database.QueryGetProjectFollowingNames(username)
 	if err != nil {
 		RespondWithError(context, httpcode, fmt.Sprintf("Failed to fetch following: %v", err))
 		return
