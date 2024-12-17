@@ -11,16 +11,14 @@ import (
 	"backend/api/internal/types"
 )
 
-// a function to retrieve the username given a user id
+// GetUsernameById retrieves the username associated with the given user ID.
 //
-// input:
+// Parameters:
+//   - id: The unique identifier of the user.
 //
-//	id (int64) - the id
-//
-// output:
-//
-//	string - the username
-//	error
+// Returns:
+//   - string: The username if found.
+//   - error: An error if the query fails. Returns nil for both if no user exists.
 func GetUsernameById(id int64) (string, error) {
 	query := `SELECT username FROM Users WHERE id = ?;`
 
@@ -38,16 +36,14 @@ func GetUsernameById(id int64) (string, error) {
 	return retrievedUserName, nil
 }
 
-// a function to retrieve the user id given a username
+// GetUserIdByUsername retrieves the user ID associated with the given username.
 //
-// input:
+// Parameters:
+//   - username: The username to query.
 //
-//	string - the username
-//
-// output:
-//
-//	id (int64) - the id
-//	error
+// Returns:
+//   - int: The user ID if found.
+//   - error: An error if the query fails or the username does not exist.
 func GetUserIdByUsername(username string) (int, error) {
 	query := `SELECT id FROM Users WHERE username = ?`
 	var userID int
@@ -59,16 +55,14 @@ func GetUserIdByUsername(username string) (int, error) {
 	return userID, nil
 }
 
-// a function to get all user data based on a username
+// QueryUsername retrieves all user data for the given username.
 //
-// input:
+// Parameters:
+//   - username: The username to query.
 //
-//	username (string) - the username to query for
-//
-// output:
-//
-//	*types.User - the user retrieved
-//	error
+// Returns:
+//   - *types.User: The user details if found.
+//   - error: An error if the query or data parsing fails.
 func QueryUsername(username string) (*types.User, error) {
 	query := `SELECT username, picture, bio, links, creation_date FROM Users WHERE username = ?;`
 
@@ -94,15 +88,13 @@ func QueryUsername(username string) (*types.User, error) {
 	return &user, nil
 }
 
-// a function to create a user in the database
+// QueryCreateUser creates a new user in the database.
 //
-// input:
+// Parameters:
+//   - user: The user data to insert.
 //
-//	user (*types.User) - the user to be created
-//
-// output:
-//
-//	error
+// Returns:
+//   - error: An error if the user creation fails.
 func QueryCreateUser(user *types.User) error {
 	linksJSON, err := json.Marshal(user.Links)
 	if err != nil {
@@ -127,16 +119,14 @@ func QueryCreateUser(user *types.User) error {
 	return nil
 }
 
-// a function that deletes a user by their username
+// QueryDeleteUser deletes a user by their username.
 //
-// input:
+// Parameters:
+//   - username: The username of the user to delete.
 //
-//	username (string) - the username to be deleted
-//
-// output:
-//
-//	int16 - status code
-//	error
+// Returns:
+//   - int16: HTTP-like status code indicating the result.
+//   - error: An error if the deletion fails.
 func QueryDeleteUser(username string) (int16, error) {
 	query := `DELETE from Users WHERE username=?;`
 	res, err := DB.Exec(query, username)
@@ -154,16 +144,14 @@ func QueryDeleteUser(username string) (int16, error) {
 	return 200, nil
 }
 
-// a function that updates a user in the database given their username
+// QueryUpdateUser updates a user's details by their username.
 //
-// input:
+// Parameters:
+//   - username: The username of the user to update.
+//   - updatedData: A map of fields to update and their new values.
 //
-//	username (string) - the username to be updated
-//	updatedData (map[string]interface{}) - the updated data in JSON-like form
-//
-// output:
-//
-//	error
+// Returns:
+//   - error: An error if the update fails or no user is found.
 func QueryUpdateUser(username string, updatedData map[string]interface{}) error {
 
 	newUsername, usernameExists := updatedData["username"]
@@ -196,17 +184,15 @@ func QueryUpdateUser(username string, updatedData map[string]interface{}) error 
 	return nil
 }
 
-//	function to retrieve the usernames of a user's followers
+// QueryGetUsersFollowersUsernames retrieves the usernames of users who follow the specified user.
 //
-// input:
+// Parameters:
+//   - username: The username of the user.
 //
-//	username (string) - the user to retrieve
-//
-// output:
-//
-//	[]string - the usernames
-//	int - http status code
-//	error
+// Returns:
+//   - []string: A list of usernames of the followers.
+//   - int: HTTP-like status code.
+//   - error: An error if the query fails.
 func QueryGetUsersFollowersUsernames(username string) ([]string, int, error) {
 	userID, err := GetUserIdByUsername(username)
 	if err != nil {
@@ -222,17 +208,15 @@ func QueryGetUsersFollowersUsernames(username string) ([]string, int, error) {
 	return getUsersFollowingOrFollowersUsernames(query, userID)
 }
 
-// function to retrieve the ids of a user's followers
+// function to retrieve the user ids of the users who follow the given user
 //
-// input:
+// Parameters:
+//  - username (string): the user to retrieve
 //
-//	username (string) - the user to retrieve
-//
-// output:
-//
-//	[]int - the int ids
-//	int - http status code
-//	error
+// Returns:
+//	- []int: a list of user ids of users who follow the specified user
+//	- int: HTTP status code indicating the result of the operation
+//	- error: any error encountered during the query
 func QueryGetUsersFollowers(username string) ([]int, int, error) {
 	userID, err := GetUserIdByUsername(username)
 	if err != nil {
@@ -250,15 +234,13 @@ func QueryGetUsersFollowers(username string) ([]int, int, error) {
 
 // function to retrieve the usernames of the users who follow the given user
 //
-// input:
+// Parameters:
+//	- username (string): the user to retrieve
 //
-//	username (string) - the user to retrieve
-//
-// output:
-//
-//	[]string - the usernames
-//	int - http status code
-//	error
+// Returns:
+//	- []string: a list of usernames of users who follow the specified user
+//	- int: HTTP status code indicating the result of the operation
+//	- error: any error encountered during the query
 func QueryGetUsersFollowingUsernames(username string) ([]string, int, error) {
 	userID, err := GetUserIdByUsername(username)
 	if err != nil {
@@ -276,15 +258,13 @@ func QueryGetUsersFollowingUsernames(username string) ([]string, int, error) {
 
 // function to retrieve the ids of the users who follow the given user
 //
-// input:
+// Parameters:
+//	- username (string) - the user to retrieve
 //
-//	username (string) - the user to retrieve
-//
-// output:
-//
-//	[]int - the int ids
-//	int - http status code
-//	error
+// Returns:
+//	- []int: a list of user IDs of users who follow the specified user
+//	- int: HTTP status code indicating the result of the operation
+//	- error: any error encountered during the query
 func QueryGetUsersFollowing(username string) ([]int, int, error) {
 	userID, err := GetUserIdByUsername(username)
 	if err != nil {
@@ -300,18 +280,16 @@ func QueryGetUsersFollowing(username string) ([]int, int, error) {
 	return getUsersFollowingOrFollowers(query, userID)
 }
 
-// helper function to use for retrieving
+// helper function to retrieve the followers or followings of a user by their IDs
 //
-// input:
+// Parameters:
+//	- query (string): the SQL query to execute
+//	- userID (int): the ID of the user to find follow data for
 //
-//	query (string) - the query used to get users data
-//	userID (int) - the user's int
-//
-// output:
-//
-//	[]int - the ids of the retrieved users
-//	int - httpcode
-//	error
+// Returns:
+//	- []int: a list of user IDs for the followers or followings
+//	- int: HTTP status code
+//	- error: any error encountered during the query
 func getUsersFollowingOrFollowers(query string, userID int) ([]int, int, error) {
 	rows, err := ExecQuery(query, userID)
 	if err != nil {
@@ -335,18 +313,16 @@ func getUsersFollowingOrFollowers(query string, userID int) ([]int, int, error) 
 	return users, http.StatusOK, nil
 }
 
-// helper function to use for retrieving
+// helper function to retrieve the followers or followings of a user by their usernames
 //
-// input:
+// Parameters:
+//	- query (string): the SQL query to execute
+//	- userID (int): the ID of the user to find follow data for
 //
-//	query (string) - the query used to get users data
-//	userID (int) - the user's int
-//
-// output:
-//
-//	[]int - the ids of the retrieved users
-//	int - httpcode
-//	error
+// Returns:
+//	- []string: a list of usernames for the followers or followings
+//	- int: HTTP status code
+//	- error: any error encountered during the query
 func getUsersFollowingOrFollowersUsernames(query string, userID int) ([]string, int, error) {
 	rows, err := ExecQuery(query, userID)
 	if err != nil {
@@ -370,17 +346,15 @@ func getUsersFollowingOrFollowersUsernames(query string, userID int) ([]string, 
 	return users, http.StatusOK, nil
 }
 
-// function to create a follow from user to follow newFollow
+// function to create a follow relationship between two users
 //
-// input:
+// Parameters:
+//	- user (string): the username of the user initiating the follow
+//	- newFollow (string): the username of the user to be followed
 //
-//	user (string) - the username of the user requesting a follow
-//	newFollow (string) - the username of the user to be followed
-//
-// output:
-//
-//	int - http code
-//	error
+// Returns:
+//	- int: HTTP status code
+//	- error: any error encountered during the query
 func CreateNewUserFollow(user string, newFollow string) (int, error) {
 	userID, err := GetUserIdByUsername(user)
 	if err != nil {
@@ -414,17 +388,15 @@ func CreateNewUserFollow(user string, newFollow string) (int, error) {
 	return http.StatusOK, nil
 }
 
-// function to remove a follow from user to unfollow unfollow
+// function to remove a follow relationship between two users
 //
-// input:
+// Parameters:
+//	- user (string): the username of the user initiating the unfollow
+//	- unfollow (string): the username of the user to be unfollowed
 //
-//	user (string) - the username of the user requesting an unfollow
-//	unfollow (string) - the username of the user to be unfollowed
-//
-// output:
-//
-//	int - http code
-//	error
+// Returns:
+//	- int: HTTP status code
+//	- error: any error encountered during the query
 func RemoveUserFollow(user string, unfollow string) (int, error) {
 	userID, err := GetUserIdByUsername(user)
 	if err != nil {

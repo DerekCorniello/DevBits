@@ -10,6 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetUsernameById handles GET requests to fetch a user by their username.
+// It expects the `username` parameter in the URL.
+// Returns:
+// - 400 Bad Request if the username is invalid.
+// - 404 Not Found if no user is found with the given username.
+// - 500 Internal Server Error if a database query fails.
+// On success, responds with a 200 OK status and the user data in JSON format.
 func GetUsernameById(context *gin.Context) {
 	username := context.Param("username")
 
@@ -27,6 +34,13 @@ func GetUsernameById(context *gin.Context) {
 	context.JSON(http.StatusOK, user)
 }
 
+// GetUserByUsername handles GET requests to fetch a user by their username.
+// It expects the `username` parameter in the URL.
+// Returns:
+// - 400 Bad Request if the username is invalid.
+// - 404 Not Found if no user is found with the given username.
+// - 500 Internal Server Error if a database query fails.
+// On success, responds with a 200 OK status and the user data in JSON format.
 func GetUserByUsername(context *gin.Context) {
 	username := context.Param("username")
 
@@ -44,6 +58,12 @@ func GetUserByUsername(context *gin.Context) {
 	context.JSON(http.StatusOK, user)
 }
 
+// CreateUser handles POST requests to create a new user.
+// It expects a JSON body with the user details.
+// Returns:
+// - 400 Bad Request if the JSON is invalid or the user details are incomplete.
+// - 500 Internal Server Error if an error occurs while creating the user.
+// On success, responds with a 201 Created status and a message confirming the user creation.
 func CreateUser(context *gin.Context) {
 	var newUser types.User
 	err := context.BindJSON(&newUser)
@@ -60,6 +80,13 @@ func CreateUser(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Created new user: '%s'", newUser.Username)})
 }
 
+// DeleteUser handles DELETE requests to delete a user.
+// It expects the `username` parameter in the URL.
+// Returns:
+// - 400 Bad Request if the username is invalid.
+// - 404 Not Found if no user is found with the given username.
+// - 500 Internal Server Error if a database query fails.
+// On success, responds with a 200 OK status and a message confirming the user deletion.
 func DeleteUser(context *gin.Context) {
 	username := context.Param("username")
 	code, err := database.QueryDeleteUser(username)
@@ -79,6 +106,13 @@ func DeleteUser(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("User '%v' deleted.", username)})
 }
 
+// UpdateUserInfo handles PUT requests to update a user's information.
+// It expects the `username` parameter in the URL and a JSON body with the updated data.
+// Returns:
+// - 400 Bad Request if the data is invalid or contains unallowed fields.
+// - 404 Not Found if no user is found with the given username.
+// - 500 Internal Server Error if an error occurs while updating the user data.
+// On success, responds with a 200 OK status and a message confirming the update.
 func UpdateUserInfo(context *gin.Context) {
 	// we dont want to create a whole new user, that is
 	// why we dont use a user type here...
@@ -139,6 +173,12 @@ func UpdateUserInfo(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "User updated successfully.", "user": validUser})
 }
 
+// GetUsersFollowers handles GET requests to fetch the list of user IDs who follow the specified user.
+// It expects the `username` parameter in the URL.
+// Returns:
+// - 404 Not Found if no user is found with the given username.
+// - 500 Internal Server Error if a database query fails.
+// On success, responds with a 200 OK status and a list of follower IDs in JSON format.
 func GetUsersFollowers(context *gin.Context) {
 	username := context.Param("username")
 
@@ -151,6 +191,12 @@ func GetUsersFollowers(context *gin.Context) {
 	context.JSON(http.StatusOK, followers)
 }
 
+// GetUsersFollowing handles GET requests to fetch the list of user IDs that the specified user follows.
+// It expects the `username` parameter in the URL.
+// Returns:
+// - 404 Not Found if no user is found with the given username.
+// - 500 Internal Server Error if a database query fails.
+// On success, responds with a 200 OK status and a list of following user IDs in JSON format.
 func GetUsersFollowing(context *gin.Context) {
 	username := context.Param("username")
 
@@ -163,6 +209,12 @@ func GetUsersFollowing(context *gin.Context) {
 	context.JSON(http.StatusOK, following)
 }
 
+// GetUsersFollowersUsernames handles GET requests to fetch the usernames of users who follow the specified user.
+// It expects the `username` parameter in the URL.
+// Returns:
+// - 404 Not Found if no user is found with the given username.
+// - 500 Internal Server Error if a database query fails.
+// On success, responds with a 200 OK status and a list of follower usernames in JSON format.
 func GetUsersFollowersUsernames(context *gin.Context) {
 	username := context.Param("username")
 
@@ -175,6 +227,12 @@ func GetUsersFollowersUsernames(context *gin.Context) {
     context.JSON(http.StatusOK, gin.H{"message": "Successfully got followers", "followers":followers})
 }
 
+// GetUsersFollowingUsernames handles GET requests to fetch the usernames of users whom the specified user follows.
+// It expects the `username` parameter in the URL.
+// Returns:
+// - 404 Not Found if no user is found with the given username.
+// - 500 Internal Server Error if a database query fails.
+// On success, responds with a 200 OK status and a list of following usernames in JSON format.
 func GetUsersFollowingUsernames(context *gin.Context) {
 	username := context.Param("username")
 
@@ -187,6 +245,12 @@ func GetUsersFollowingUsernames(context *gin.Context) {
     context.JSON(http.StatusOK, gin.H{"message": "Successfully got following", "following": following})
 }
 
+// FollowUser handles POST requests to create a follow relationship between a user and another user.
+// It expects the `username` and `new_follow` parameters in the URL.
+// Returns:
+// - 400 Bad Request if the follow operation fails or the user is already following the other user.
+// - 500 Internal Server Error if a database query fails.
+// On success, responds with a 200 OK status and a message confirming the follow operation.
 func FollowUser(context *gin.Context) {
 	username := context.Param("username")
 	newFollow := context.Param("new_follow")
@@ -199,6 +263,12 @@ func FollowUser(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v now follows %v", username, newFollow)})
 }
 
+// UnfollowUser handles DELETE requests to remove a follow relationship between a user and another user.
+// It expects the `username` and `unfollow` parameters in the URL.
+// Returns:
+// - 400 Bad Request if the unfollow operation fails or the user is not following the other user.
+// - 500 Internal Server Error if a database query fails.
+// On success, responds with a 200 OK status and a message confirming the unfollow operation.
 func UnfollowUser(context *gin.Context) {
 	username := context.Param("username")
 	unFollow := context.Param("unfollow")

@@ -11,16 +11,14 @@ import (
 	"backend/api/internal/types"
 )
 
-// a function to get all project data based on a username
+// QueryProject retrieves a project by its ID from the database.
 //
-// input:
+// Parameters:
+//   - id: The unique identifier of the project to query.
 //
-//	id (int) - the project id to query for
-//
-// output:
-//
-//	*types.Project - the user retrieved
-//	error
+// Returns:
+//   - *types.Project: The project details if found.
+//   - error: An error if the query fails. Returns nil for both if no project exists.
 func QueryProject(id int) (*types.Project, error) {
 	query := `SELECT id, name, description, status, likes, links, tags, owner, creation_date FROM Projects WHERE id = ?;`
 	row := DB.QueryRow(query, id)
@@ -55,16 +53,14 @@ func QueryProject(id int) (*types.Project, error) {
 	return &project, nil
 }
 
-// a function to create a project in the database
+// QueryCreateProject creates a new project in the database.
 //
-// input:
+// Parameters:
+//   - proj: The project to be created, containing all necessary fields.
 //
-//	user (*types.Project) - the project to be created
-//
-// output:
-//
-//	 int64 - last project id created, for verifcation
-//		error
+// Returns:
+//   - int64: The ID of the newly created project.
+//   - error: An error if the operation fails.
 func QueryCreateProject(proj *types.Project) (int64, error) {
 	linksJSON, err := MarshalToJSON(proj.Links)
 	if err != nil {
@@ -94,16 +90,14 @@ func QueryCreateProject(proj *types.Project) (int64, error) {
 	return lastId, nil
 }
 
-// a function that deletes a project by its id
+// QueryDeleteProject deletes a project by its ID.
 //
-// input:
+// Parameters:
+//   - id: The unique identifier of the project to delete.
 //
-//	id (int) - the project id of the project to be deleted
-//
-// output:
-//
-//	int16 - status code
-//	error
+// Returns:
+//   - int16: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or no project is found.
 func QueryDeleteProject(id int) (int16, error) {
 	query := `DELETE from Projects WHERE id=?;`
 	res, err := DB.Exec(query, id)
@@ -121,16 +115,14 @@ func QueryDeleteProject(id int) (int16, error) {
 	return 200, nil
 }
 
-// a function that updates a project in the database given the user id
+// QueryUpdateProject updates an existing project in the database.
 //
-// input:
+// Parameters:
+//   - id: The unique identifier of the project to update.
+//   - updatedData: A map containing the fields to update with their new values.
 //
-//	id (int) - the project id of the project to be updated
-//	updatedData (map[string]interface{}) - the updated data in JSON-like form
-//
-// output:
-//
-//	error
+// Returns:
+//   - error: An error if the operation fails or no project is found.
 func QueryUpdateProject(id int, updatedData map[string]interface{}) error {
 	query := `UPDATE Projects SET `
 	var args []interface{}
@@ -154,17 +146,15 @@ func QueryUpdateProject(id int, updatedData map[string]interface{}) error {
 	return nil
 }
 
-// function to retrieve the ids of a project's followers
+// QueryGetProjectFollowers retrieves the IDs of a project's followers.
 //
-// input:
+// Parameters:
+//   - projectID: The unique identifier of the project.
 //
-//	projectID (int) - the project to retrieve
-//
-// output:
-//
-//	[]int - the int ids
-//	int - http status code
-//	error
+// Returns:
+//   - []int: A list of user IDs who follow the project.
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the query fails.
 func QueryGetProjectFollowers(projectID int) ([]int, int, error) {
 	query := `
         SELECT u.id
@@ -175,17 +165,15 @@ func QueryGetProjectFollowers(projectID int) ([]int, int, error) {
 	return getProjectFollowersOrFollowing(query, projectID)
 }
 
-// function to retrieve the usernames of a project's followers
+// QueryGetProjectFollowersUsernames retrieves the usernames of a project's followers.
 //
-// input:
+// Parameters:
+//   - projectID: The unique identifier of the project.
 //
-//	projectID (int) - the user to retrieve
-//
-// output:
-//
-//	[]string - the string usernames
-//	int - http status code
-//	error
+// Returns:
+//   - []string: A list of usernames of the project's followers.
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the query fails.
 func QueryGetProjectFollowersUsernames(projectID int) ([]string, int, error) {
 	query := `
         SELECT u.username
@@ -196,17 +184,15 @@ func QueryGetProjectFollowersUsernames(projectID int) ([]string, int, error) {
 	return getProjectFollowersOrFollowingUsernames(query, projectID)
 }
 
-// function to retrieve the projects a user is following by id
+// QueryGetProjectFollowing retrieves the project IDs a user is following.
 //
-// input:
+// Parameters:
+//   - username: The username of the user.
 //
-//	username (string) - the user to retrieve
-//
-// output:
-//
-//	[]int - the int project ids
-//	int - http status code
-//	error
+// Returns:
+//   - []int: A list of project IDs the user is following.
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the query fails.
 func QueryGetProjectFollowing(username string) ([]int, int, error) {
 	userID, err := GetUserIdByUsername(username)
 	if err != nil {
@@ -222,17 +208,15 @@ func QueryGetProjectFollowing(username string) ([]int, int, error) {
 	return getProjectFollowersOrFollowing(query, userID)
 }
 
-// function to retrieve the projects a user is following by name
+// QueryGetProjectFollowingNames retrieves the project names a user is following.
 //
-// input:
+// Parameters:
+//   - username: The username of the user.
 //
-//	username (string) - the user to retrieve
-//
-// output:
-//
-//	[]string - the string project names
-//	int - http status code
-//	error
+// Returns:
+//   - []string: A list of project names the user is following.
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the query fails.
 func QueryGetProjectFollowingNames(username string) ([]string, int, error) {
 	userID, err := GetUserIdByUsername(username)
 	if err != nil {
@@ -248,18 +232,16 @@ func QueryGetProjectFollowingNames(username string) ([]string, int, error) {
 	return getProjectFollowersOrFollowingUsernames(query, userID)
 }
 
-// helper function to use for retrieving followers and following
+// getProjectFollowersOrFollowing is a helper function for retrieving follower or following IDs.
 //
-// input:
+// Parameters:
+//   - query: The SQL query string to execute.
+//   - userID: The unique identifier of the user.
 //
-//	query (string) - the query used to get users data
-//	userID (int) - the user's int
-//
-// output:
-//
-//	[]int - the ids of the retrieved users
-//	int - httpcode
-//	error
+// Returns:
+//   - []int: A list of IDs retrieved by the query.
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the query fails.
 func getProjectFollowersOrFollowing(query string, userID int) ([]int, int, error) {
 	rows, err := ExecQuery(query, userID)
 	if err != nil {
@@ -283,8 +265,18 @@ func getProjectFollowersOrFollowing(query string, userID int) ([]int, int, error
 	return projectIDs, http.StatusOK, nil
 }
 
-func getProjectFollowersOrFollowingUsernames(query string, userID int) ([]string, int, error) {
-	rows, err := ExecQuery(query, userID)
+// getProjectFollowersOrFollowingUsernames is a helper function for retrieving follower or following usernames.
+//
+// Parameters:
+//   - query: The SQL query string to execute.
+//   - projectID: The unique identifier of the project.
+//
+// Returns:
+//   - []string: A list of usernames retrieved by the query.
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the query fails.
+func getProjectFollowersOrFollowingUsernames(query string, projectID int) ([]string, int, error) {
+	rows, err := ExecQuery(query, projectID)
 	if err != nil {
 		return nil, http.StatusNotFound, err
 	}
@@ -306,6 +298,15 @@ func getProjectFollowersOrFollowingUsernames(query string, userID int) ([]string
 	return projectNames, http.StatusOK, nil
 }
 
+// CreateNewProjectFollow creates a follow relationship between a user and a project.
+//
+// Parameters:
+//   - username: The username of the user creating the follow.
+//   - projectID: The ID of the project to follow (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or the user is already following the project.
 func CreateNewProjectFollow(username string, projectID string) (int, error) {
 	userID, err := GetUserIdByUsername(username)
 	if err != nil {
@@ -338,6 +339,15 @@ func CreateNewProjectFollow(username string, projectID string) (int, error) {
 	return http.StatusOK, nil
 }
 
+// RemoveProjectFollow removes a follow relationship between a user and a project.
+//
+// Parameters:
+//   - username: The username of the user removing the follow.
+//   - projectID: The ID of the project to unfollow (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or the user is not following the project.
 func RemoveProjectFollow(username string, projectID string) (int, error) {
 	userID, err := GetUserIdByUsername(username)
 	if err != nil {

@@ -11,6 +11,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetProjectById handles GET requests to retrieve project information by its ID.
+// It expects the `project_id` parameter in the URL and does not require a request body.
+// Returns:
+// - 400 Bad Request if the ID is invalid.
+// - 404 Not Found if the project does not exist.
+// - 500 Internal Server Error if the database query fails.
+// On success, responds with a 200 OK status and the project details in JSON format.
 func GetProjectById(context *gin.Context) {
 	strId := context.Param("project_id")
 	id, err := strconv.Atoi(strId)
@@ -31,6 +38,13 @@ func GetProjectById(context *gin.Context) {
 	context.JSON(http.StatusOK, project)
 }
 
+// CreateProject handles POST requests to create a new project.
+// It expects a JSON payload that can be bound to a `types.Project` object.
+// Validates the provided owner's ID and ensures the user exists.
+// Returns:
+// - 400 Bad Request if the JSON payload is invalid or the owner cannot be verified.
+// - 500 Internal Server Error if there is a database error.
+// On success, responds with a 201 Created status and the new project ID in JSON format.
 func CreateProject(context *gin.Context) {
 	var newProj types.Project
 	err := context.BindJSON(&newProj)
@@ -60,6 +74,14 @@ func CreateProject(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Project created successfully with id '%v'", id)})
 }
 
+// UpdateProjectInfo handles PATCH requests to update project information.
+// It expects the `project_id` parameter in the URL and a JSON payload with update fields.
+// Validates the project ID, checks for the existence of the project, and ensures the fields being updated are allowed.
+// Returns:
+// - 400 Bad Request for invalid input or disallowed fields.
+// - 404 Not Found if the project does not exist.
+// - 500 Internal Server Error for database errors.
+// On success, responds with a 200 OK status and the updated project details in JSON format.
 func DeleteProject(context *gin.Context) {
 	strId := context.Param("project_id")
 	id, err := strconv.Atoi(strId)
@@ -87,6 +109,15 @@ func DeleteProject(context *gin.Context) {
 		"message": fmt.Sprintf("Project %v deleted.", id),
 	})
 }
+
+// UpdateProjectInfo handles PATCH requests to update project information.
+// It expects the `project_id` parameter in the URL and a JSON payload with update fields.
+// Validates the project ID, checks for the existence of the project, and ensures the fields being updated are allowed.
+// Returns:
+// - 400 Bad Request for invalid input or disallowed fields.
+// - 404 Not Found if the project does not exist.
+// - 500 Internal Server Error for database errors.
+// On success, responds with a 200 OK status and the updated project details in JSON format.
 func UpdateProjectInfo(context *gin.Context) {
 	var updateData map[string]interface{}
 
@@ -160,6 +191,12 @@ func UpdateProjectInfo(context *gin.Context) {
 	})
 }
 
+// GetProjectFollowers handles GET requests to fetch a list of users following a project.
+// It expects the `project_id` parameter in the URL.
+// Returns:
+// - 400 Bad Request if the project ID is invalid.
+// - Appropriate error code (404 if missing data, 500 if error) for database query failures.
+// On success, responds with a 200 OK status and a list of followers in JSON format.
 func GetProjectFollowers(context *gin.Context) {
 	projectId := context.Param("project_id")
 	intProjectId, err := strconv.Atoi(projectId)
@@ -177,6 +214,11 @@ func GetProjectFollowers(context *gin.Context) {
 	context.JSON(http.StatusOK, followers)
 }
 
+// GetProjectFollowing handles GET requests to fetch a list of projects followed by a user.
+// It expects the `username` parameter in the URL.
+// Returns:
+// - Appropriate error code (404 if missing data, 500 if error) for database query failures.
+// On success, responds with a 200 OK status and a list of followed projects in JSON format.
 func GetProjectFollowing(context *gin.Context) {
 	username := context.Param("username")
 
@@ -189,6 +231,12 @@ func GetProjectFollowing(context *gin.Context) {
 	context.JSON(http.StatusOK, following)
 }
 
+// GetProjectFollowersUsernames handles GET requests to fetch the usernames of users following a project.
+// It expects the `project_id` parameter in the URL.
+// Returns:
+// - 400 Bad Request if the project ID is invalid.
+// - Appropriate error code (404 if missing data, 500 if error) for database query failures.
+// On success, responds with a 200 OK status and a list of usernames in JSON format.
 func GetProjectFollowersUsernames(context *gin.Context) {
 	projectId := context.Param("project_id")
 	intProjectId, err := strconv.Atoi(projectId)
@@ -206,6 +254,11 @@ func GetProjectFollowersUsernames(context *gin.Context) {
 	context.JSON(http.StatusOK, followers)
 }
 
+// GetProjectFollowingNames handles GET requests to fetch the names of projects followed by a user.
+// It expects the `username` parameter in the URL.
+// Returns:
+// - Appropriate error code (404 if missing data, 500 if error) for database query failures.
+// On success, responds with a 200 OK status and a list of project names in JSON format.
 func GetProjectFollowingNames(context *gin.Context) {
 	username := context.Param("username")
 
@@ -218,6 +271,11 @@ func GetProjectFollowingNames(context *gin.Context) {
 	context.JSON(http.StatusOK, following)
 }
 
+// FollowProject handles POST requests to follow a project.
+// It expects the `username` and `project_id` parameters in the URL.
+// Returns:
+// - Appropriate error code (404 if missing data, 500 if error) for database failures or invalid input.
+// On success, responds with a 200 OK status and a confirmation message.
 func FollowProject(context *gin.Context) {
 	username := context.Param("username")
 	projectId := context.Param("project_id")
@@ -230,6 +288,11 @@ func FollowProject(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v now follows %v", username, projectId)})
 }
 
+// UnfollowProject handles DELETE requests to unfollow a project.
+// It expects the `username` and `project_id` parameters in the URL.
+// Returns:
+// - Appropriate error code (404 if missing data, 500 if error) for database failures or invalid input.
+// On success, responds with a 200 OK status and a confirmation message.
 func UnfollowProject(context *gin.Context) {
 	username := context.Param("username")
 	projectId := context.Param("project_id")
