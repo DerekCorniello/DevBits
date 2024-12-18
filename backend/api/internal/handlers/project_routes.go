@@ -74,14 +74,13 @@ func CreateProject(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Project created successfully with id '%v'", id)})
 }
 
-// UpdateProjectInfo handles PATCH requests to update project information.
-// It expects the `project_id` parameter in the URL and a JSON payload with update fields.
-// Validates the project ID, checks for the existence of the project, and ensures the fields being updated are allowed.
+// DeleteProject handles DELETE requests to delete a project.
+// It expects the `project_id` parameter in the URL.
 // Returns:
-// - 400 Bad Request for invalid input or disallowed fields.
-// - 404 Not Found if the project does not exist.
-// - 500 Internal Server Error for database errors.
-// On success, responds with a 200 OK status and the updated project details in JSON format.
+// - 400 Bad Request if the project_id is invalid.
+// - 404 Not Found if no project is found with the given id.
+// - 500 Internal Server Error if a database query fails.
+// On success, responds with a 200 OK status and a message confirming the project deletion.
 func DeleteProject(context *gin.Context) {
 	strId := context.Param("project_id")
 	id, err := strconv.Atoi(strId)

@@ -79,12 +79,12 @@ func QueryCreateProject(proj *types.Project) (int64, error) {
 
 	res, err := DB.Exec(query, proj.Name, proj.Description, proj.Status, string(linksJSON), string(tagsJSON), proj.Owner, currentTime)
 	if err != nil {
-		return -1, fmt.Errorf("Failed to create project `%v`: %v", proj.Name, err)
+		return -1, fmt.Errorf("Failed to create project '%v': %v", proj.Name, err)
 	}
 
 	lastId, err := res.LastInsertId()
 	if err != nil {
-		return -1, fmt.Errorf("Failed to ensure proj was created: %v", err)
+		return -1, fmt.Errorf("Failed to ensure project was created: %v", err)
 	}
 
 	return lastId, nil
@@ -96,7 +96,7 @@ func QueryCreateProject(proj *types.Project) (int64, error) {
 //   - id: The unique identifier of the project to delete.
 //
 // Returns:
-//   - int16: HTTP-like status code indicating the result of the operation.
+//   - int16: http status code indicating the result of the operation.
 //   - error: An error if the operation fails or no project is found.
 func QueryDeleteProject(id int) (int16, error) {
 	query := `DELETE from Projects WHERE id=?;`
