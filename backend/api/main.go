@@ -45,22 +45,26 @@ func main() {
 	router.GET("/users/:username/followers/usernames", handlers.GetUsersFollowersUsernames)
 	router.GET("/users/:username/follows/usernames", handlers.GetUsersFollowingUsernames)
 
-    router.POST("/users/:username/follow/:new_follow", handlers.FollowUser)
-    router.POST("/users/:username/unfollow/:unfollow", handlers.UnfollowUser)
+	router.POST("/users/:username/follow/:new_follow", handlers.FollowUser)
+	router.POST("/users/:username/unfollow/:unfollow", handlers.UnfollowUser)
 
-    router.GET("/projects/:project_id", handlers.GetProjectById)
-    router.POST("/projects", handlers.CreateProject)
+	router.GET("/projects/:project_id", handlers.GetProjectById)
+	router.POST("/projects", handlers.CreateProject)
 	router.PUT("/projects/:project_id", handlers.UpdateProjectInfo)
-    router.DELETE("/projects/:project_id", handlers.DeleteProject)
+	router.DELETE("/projects/:project_id", handlers.DeleteProject)
 
 	router.GET("/projects/:project_id/followers", handlers.GetProjectFollowers)
-    router.GET("/projects/follows/:username", handlers.GetProjectFollowing)
+	router.GET("/projects/follows/:username", handlers.GetProjectFollowing)
 	router.GET("/projects/:project_id/followers/usernames", handlers.GetProjectFollowersUsernames)
-    router.GET("/projects/follows/:username/names", handlers.GetProjectFollowingNames)
+	router.GET("/projects/follows/:username/names", handlers.GetProjectFollowingNames)
 
-    router.POST("/projects/:username/follow/:project_id", handlers.FollowProject)
-    router.POST("/projects/:username/unfollow/:project_id", handlers.UnfollowProject)
+	router.POST("/projects/:username/follow/:project_id", handlers.FollowProject)
+	router.POST("/projects/:username/unfollow/:project_id", handlers.UnfollowProject)
 
+	router.GET("/posts/:post_id", handlers.GetPostById)
+	router.POST("/posts", handlers.CreatePost)
+	router.PUT("/posts/:post_id", handlers.UpdatePostInfo)
+	router.DELETE("/posts/:post_id", handlers.DeletePost)
 
 	var dbinfo, dbtype string
 	if DEBUG {
