@@ -22,6 +22,7 @@ func GetPostById(context *gin.Context) {
 	strId := context.Param("post_id")
 	id, err := strconv.Atoi(strId)
 	if err != nil {
+		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse post_id: %v", err))
 		return
 	}
 	post, err := database.QueryPost(id)
@@ -49,6 +50,7 @@ func GetPostsByUserId(context *gin.Context) {
 	strId := context.Param("user_id")
 	id, err := strconv.Atoi(strId)
 	if err != nil {
+		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse user_id: %v", err))
 		return
 	}
 	posts, httpcode, err := database.QueryPostsByUserId(id)
@@ -57,7 +59,7 @@ func GetPostsByUserId(context *gin.Context) {
 		return
 	}
 
-	if posts == nil || len(posts) == 0 {
+	if posts == nil {
 		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Posts from user with id '%v' not found", strId))
 		return
 	}
@@ -76,6 +78,7 @@ func GetPostsByProjectId(context *gin.Context) {
 	strId := context.Param("project_id")
 	id, err := strconv.Atoi(strId)
 	if err != nil {
+		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse project_id: %v", err))
 		return
 	}
 	posts, httpcode, err := database.QueryPostsByProjectId(id)
@@ -84,7 +87,7 @@ func GetPostsByProjectId(context *gin.Context) {
 		return
 	}
 
-	if posts == nil || len(posts) == 0 {
+	if posts == nil {
 		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Posts within project with id '%v' not found", strId))
 		return
 	}

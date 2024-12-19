@@ -140,7 +140,7 @@ func QueryPostsByUserId(userId int) ([]types.Post, int, error) {
 	}
 	defer rows.Close()
 
-	var posts []types.Post
+	var posts []types.Post = []types.Post{}
 
 	for rows.Next() {
 		var post types.Post
@@ -159,6 +159,7 @@ func QueryPostsByUserId(userId int) ([]types.Post, int, error) {
 			}
 			return nil, http.StatusInternalServerError, err
 		}
+        posts = append(posts, post)
 	}
 
 	return posts, http.StatusOK, nil
@@ -181,36 +182,26 @@ func QueryPostsByProjectId(projId int) ([]types.Post, int, error) {
 	}
 	defer rows.Close()
 
-	var posts []types.Post
+	var posts []types.Post = []types.Post{}
 
 	for rows.Next() {
-		var project types.Project
-		var linksJSON, tagsJSON string
-
+		var post types.Post
 		err := rows.Scan(
-			&project.ID,
-			&project.Name,
-			&project.Description,
-			&project.Status,
-			&project.Likes,
-			&linksJSON,
-			&tagsJSON,
-			&project.Owner,
-			&project.CreationDate,
+			&post.ID,
+			&post.User,
+			&post.Project,
+			&post.Content,
+			&post.Likes,
+			&post.CreationDate,
 		)
+
 		if err != nil {
 			if err == sql.ErrNoRows {
 				return []types.Post{}, http.StatusOK, nil
 			}
 			return nil, http.StatusInternalServerError, err
 		}
-
-		if err := UnmarshalFromJSON(linksJSON, &project.Links); err != nil {
-			return nil, http.StatusBadRequest, err
-		}
-		if err := UnmarshalFromJSON(tagsJSON, &project.Tags); err != nil {
-			return nil, http.StatusBadRequest, err
-		}
+        posts = append(posts, post)
 	}
 	return posts, http.StatusOK, nil
 }
