@@ -211,12 +211,12 @@ func QueryGetUsersFollowersUsernames(username string) ([]string, int, error) {
 // function to retrieve the user ids of the users who follow the given user
 //
 // Parameters:
-//  - username (string): the user to retrieve
+//   - username (string): the user to retrieve
 //
 // Returns:
-//	- []int: a list of user ids of users who follow the specified user
-//	- int: HTTP status code indicating the result of the operation
-//	- error: any error encountered during the query
+//   - []int: a list of user ids of users who follow the specified user
+//   - int: HTTP status code indicating the result of the operation
+//   - error: any error encountered during the query
 func QueryGetUsersFollowers(username string) ([]int, int, error) {
 	userID, err := GetUserIdByUsername(username)
 	if err != nil {
@@ -235,12 +235,12 @@ func QueryGetUsersFollowers(username string) ([]int, int, error) {
 // function to retrieve the usernames of the users who follow the given user
 //
 // Parameters:
-//	- username (string): the user to retrieve
+//   - username (string): the user to retrieve
 //
 // Returns:
-//	- []string: a list of usernames of users who follow the specified user
-//	- int: HTTP status code indicating the result of the operation
-//	- error: any error encountered during the query
+//   - []string: a list of usernames of users who follow the specified user
+//   - int: HTTP status code indicating the result of the operation
+//   - error: any error encountered during the query
 func QueryGetUsersFollowingUsernames(username string) ([]string, int, error) {
 	userID, err := GetUserIdByUsername(username)
 	if err != nil {
@@ -259,12 +259,12 @@ func QueryGetUsersFollowingUsernames(username string) ([]string, int, error) {
 // function to retrieve the ids of the users who follow the given user
 //
 // Parameters:
-//	- username (string) - the user to retrieve
+//   - username (string) - the user to retrieve
 //
 // Returns:
-//	- []int: a list of user IDs of users who follow the specified user
-//	- int: HTTP status code indicating the result of the operation
-//	- error: any error encountered during the query
+//   - []int: a list of user IDs of users who follow the specified user
+//   - int: HTTP status code indicating the result of the operation
+//   - error: any error encountered during the query
 func QueryGetUsersFollowing(username string) ([]int, int, error) {
 	userID, err := GetUserIdByUsername(username)
 	if err != nil {
@@ -283,15 +283,15 @@ func QueryGetUsersFollowing(username string) ([]int, int, error) {
 // helper function to retrieve the followers or followings of a user by their IDs
 //
 // Parameters:
-//	- query (string): the SQL query to execute
-//	- userID (int): the ID of the user to find follow data for
+//   - query (string): the SQL query to execute
+//   - userID (int): the ID of the user to find follow data for
 //
 // Returns:
-//	- []int: a list of user IDs for the followers or followings
-//	- int: HTTP status code
-//	- error: any error encountered during the query
+//   - []int: a list of user IDs for the followers or followings
+//   - int: HTTP status code
+//   - error: any error encountered during the query
 func getUsersFollowingOrFollowers(query string, userID int) ([]int, int, error) {
-	rows, err := ExecQuery(query, userID)
+	rows, err := DB.Query(query, userID)
 	if err != nil {
 		return nil, http.StatusNotFound, err
 	}
@@ -316,15 +316,15 @@ func getUsersFollowingOrFollowers(query string, userID int) ([]int, int, error) 
 // helper function to retrieve the followers or followings of a user by their usernames
 //
 // Parameters:
-//	- query (string): the SQL query to execute
-//	- userID (int): the ID of the user to find follow data for
+//   - query (string): the SQL query to execute
+//   - userID (int): the ID of the user to find follow data for
 //
 // Returns:
-//	- []string: a list of usernames for the followers or followings
-//	- int: HTTP status code
-//	- error: any error encountered during the query
+//   - []string: a list of usernames for the followers or followings
+//   - int: HTTP status code
+//   - error: any error encountered during the query
 func getUsersFollowingOrFollowersUsernames(query string, userID int) ([]string, int, error) {
-	rows, err := ExecQuery(query, userID)
+	rows, err := DB.Query(query, userID)
 	if err != nil {
 		return nil, http.StatusNotFound, err
 	}
@@ -349,12 +349,12 @@ func getUsersFollowingOrFollowersUsernames(query string, userID int) ([]string, 
 // function to create a follow relationship between two users
 //
 // Parameters:
-//	- user (string): the username of the user initiating the follow
-//	- newFollow (string): the username of the user to be followed
+//   - user (string): the username of the user initiating the follow
+//   - newFollow (string): the username of the user to be followed
 //
 // Returns:
-//	- int: HTTP status code
-//	- error: any error encountered during the query
+//   - int: HTTP status code
+//   - error: any error encountered during the query
 func CreateNewUserFollow(user string, newFollow string) (int, error) {
 	userID, err := GetUserIdByUsername(user)
 	if err != nil {
@@ -391,12 +391,12 @@ func CreateNewUserFollow(user string, newFollow string) (int, error) {
 // function to remove a follow relationship between two users
 //
 // Parameters:
-//	- user (string): the username of the user initiating the unfollow
-//	- unfollow (string): the username of the user to be unfollowed
+//   - user (string): the username of the user initiating the unfollow
+//   - unfollow (string): the username of the user to be unfollowed
 //
 // Returns:
-//	- int: HTTP status code
-//	- error: any error encountered during the query
+//   - int: HTTP status code
+//   - error: any error encountered during the query
 func RemoveUserFollow(user string, unfollow string) (int, error) {
 	userID, err := GetUserIdByUsername(user)
 	if err != nil {

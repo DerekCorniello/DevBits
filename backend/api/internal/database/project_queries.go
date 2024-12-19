@@ -243,7 +243,7 @@ func QueryGetProjectFollowingNames(username string) ([]string, int, error) {
 //   - int: HTTP-like status code indicating the result of the operation.
 //   - error: An error if the query fails.
 func getProjectFollowersOrFollowing(query string, userID int) ([]int, int, error) {
-	rows, err := ExecQuery(query, userID)
+	rows, err := DB.Query(query, userID)
 	if err != nil {
 		return nil, http.StatusNotFound, err
 	}
@@ -276,7 +276,7 @@ func getProjectFollowersOrFollowing(query string, userID int) ([]int, int, error
 //   - int: HTTP-like status code indicating the result of the operation.
 //   - error: An error if the query fails.
 func getProjectFollowersOrFollowingUsernames(query string, projectID int) ([]string, int, error) {
-	rows, err := ExecQuery(query, projectID)
+	rows, err := DB.Query(query, projectID)
 	if err != nil {
 		return nil, http.StatusNotFound, err
 	}
