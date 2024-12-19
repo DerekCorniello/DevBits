@@ -3,19 +3,20 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
 	"time"
 
 	"backend/api/internal/types"
 )
 
-// QueryProject retrieves a project by its ID from the database.
+// QueryPosts retrieves a post by its ID from the database.
 //
 // Parameters:
-//   - id: The unique identifier of the project to query.
+//   - id: The unique identifier of the post to query.
 //
 // Returns:
-//   - *types.Project: The project details if found.
-//   - error: An error if the query fails. Returns nil for both if no project exists.
+//   - *types.Post: The post details if found.
+//   - error: An error if the query fails. Returns nil for both if no post exists.
 func QueryPost(id int) (*types.Post, error) {
 	query := `SELECT id, user_id, project_id, content, likes, creation_date FROM Posts WHERE id = ?;`
 	row := DB.QueryRow(query, id)
@@ -120,4 +121,96 @@ func QueryUpdatePost(id int, updatedData map[string]interface{}) error {
 	}
 
 	return nil
+}
+
+// QueryPostsByUserId retrieves a set of posts by its owning user id from the database.
+//
+// Parameters:
+//   - id: The unique identifier of the user to query.
+//
+// Returns:
+//   - *types.Post: The post details if found.
+//   - error: An error if the query fails. Returns nil for both if no post exists.
+func QueryPostsByUserId(userId int) ([]types.Post, int, error) {
+	query := `SELECT id, user_id, project_id, content, likes, creation_date FROM Posts WHERE user_id = ?;`
+
+	rows, err := DB.Query(query, userId)
+	if err != nil {
+		return nil, http.StatusNotFound, err
+	}
+	defer rows.Close()
+
+	var posts []types.Post
+
+	for rows.Next() {
+		var post types.Post
+		err := rows.Scan(
+			&post.ID,
+			&post.User,
+			&post.Project,
+			&post.Content,
+			&post.Likes,
+			&post.CreationDate,
+		)
+
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return []types.Post{}, http.StatusOK, nil
+			}
+			return nil, http.StatusInternalServerError, err
+		}
+	}
+
+	return posts, http.StatusOK, nil
+}
+
+// QueryPostsByProjectId retrieves a set of posts by its owning project id from the database.
+//
+// Parameters:
+//   - id: The unique identifier of the project to query.
+//
+// Returns:
+//   - *types.Post: The post details if found.
+//   - error: An error if the query fails. Returns nil for both if no post exists.
+func QueryPostsByProjectId(projId int) ([]types.Post, int, error) {
+	query := `SELECT id, user_id, project_id, content, likes, creation_date FROM Posts WHERE project_id = ?;`
+
+	rows, err := DB.Query(query, projId)
+	if err != nil {
+		return nil, http.StatusNotFound, err
+	}
+	defer rows.Close()
+
+	var posts []types.Post
+
+	for rows.Next() {
+		var project types.Project
+		var linksJSON, tagsJSON string
+
+		err := rows.Scan(
+			&project.ID,
+			&project.Name,
+			&project.Description,
+			&project.Status,
+			&project.Likes,
+			&linksJSON,
+			&tagsJSON,
+			&project.Owner,
+			&project.CreationDate,
+		)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return []types.Post{}, http.StatusOK, nil
+			}
+			return nil, http.StatusInternalServerError, err
+		}
+
+		if err := UnmarshalFromJSON(linksJSON, &project.Links); err != nil {
+			return nil, http.StatusBadRequest, err
+		}
+		if err := UnmarshalFromJSON(tagsJSON, &project.Tags); err != nil {
+			return nil, http.StatusBadRequest, err
+		}
+	}
+	return posts, http.StatusOK, nil
 }

@@ -8,20 +8,18 @@
 package database
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 
 	"backend/api/internal/logger"
 )
 
-
 // takes in some sort of data, and changes it to a JSON
 // data type. Will return an error if it is not JSON-esque data
 //
-// input: 
+// input:
 //      interface (interface{}) - the data to be converted to JSON
-// output: 
+// output:
 //      the JSON string
 //      an error
 
@@ -34,14 +32,13 @@ func MarshalToJSON(value interface{}) (string, error) {
 	return string(linksJSON), nil
 }
 
-
 // takes in some JSON data, and changes it to a JSON
 // data type. Will return an error if it is not JSON-esque data
 //
-// input: 
+// input:
 //      data (string) - the data in a string, edited in place
 //      interface (interface{}) - the data to be put into the string
-// output: 
+// output:
 //      error
 
 func UnmarshalFromJSON(data string, target interface{}) error {
@@ -52,28 +49,6 @@ func UnmarshalFromJSON(data string, target interface{}) error {
 	}
 	return nil
 }
-
-
-// takes in a query and some params to add to it
-// and will execute the query, given the database is
-// setup and connected.
-//
-// input:
-//      query (string) - the base query string
-//      args (...interface{}) - the params of the query
-// output:
-//      *sql.Rows - the resulting rows
-//      error
-
-func ExecQuery(query string, args ...interface{}) (*sql.Rows, error) {
-	rows, err := DB.Query(query, args...)
-	if err != nil {
-		logger.Log.Errorf("Error executing query: %v", err)
-		return nil, fmt.Errorf("Error executing query: %v", err)
-	}
-	return rows, nil
-}
-
 
 // takes in a query and some params to add to it
 // and will execute the update query, given the database is
@@ -105,11 +80,14 @@ func ExecUpdate(query string, args ...interface{}) (int64, error) {
 // and prepares the corresponding arguments, including marshaling JSON data for special fields (like links and tags).
 //
 // input:
-//      updatedData (map[string]interface{}) - a JSON like structure with all of the updatedData for the query
+//
+//	updatedData (map[string]interface{}) - a JSON like structure with all of the updatedData for the query
+//
 // output:
-//      string - the partially completed query, with all of the fields added
-//      []interface{} - the arguments for the query
-//      the error
+//
+//	string - the partially completed query, with all of the fields added
+//	[]interface{} - the arguments for the query
+//	the error
 func BuildUpdateQuery(updatedData map[string]interface{}) (string, []interface{}, error) {
 	var query string
 	var args []interface{}

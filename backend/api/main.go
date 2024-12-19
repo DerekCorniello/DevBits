@@ -66,6 +66,9 @@ func main() {
 	router.PUT("/posts/:post_id", handlers.UpdatePostInfo)
 	router.DELETE("/posts/:post_id", handlers.DeletePost)
 
+	router.GET("/posts/by-user/:user_id", handlers.GetPostsByUserId)
+	router.GET("/posts/by-project/:project_id", handlers.GetPostsByProjectId)
+
 	var dbinfo, dbtype string
 	if DEBUG {
 		dbinfo = "./api/internal/database/dev.sqlite3"

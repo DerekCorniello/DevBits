@@ -38,6 +38,60 @@ func GetPostById(context *gin.Context) {
 	context.JSON(http.StatusOK, post)
 }
 
+// GetPostByUserId handles GET requests to retrieve project information by its owning user.
+// It expects the `user_id` parameter in the URL and does not require a request body.
+// Returns:
+// - 400 Bad Request if the ID is invalid.
+// - 404 Not Found if the user does not exist.
+// - 500 Internal Server Error if the database query fails.
+// On success, responds with a 200 OK status and the posts' details in JSON format.
+func GetPostsByUserId(context *gin.Context) {
+	strId := context.Param("user_id")
+	id, err := strconv.Atoi(strId)
+	if err != nil {
+		return
+	}
+	posts, httpcode, err := database.QueryPostsByUserId(id)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to fetch posts: %v", err))
+		return
+	}
+
+	if posts == nil || len(posts) == 0 {
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Posts from user with id '%v' not found", strId))
+		return
+	}
+
+	context.JSON(http.StatusOK, posts)
+}
+
+// GetPostByProjectId handles GET requests to retrieve project information by the owning projecg.
+// It expects the `post_id` parameter in the URL and does not require a request body.
+// Returns:
+// - 400 Bad Request if the ID is invalid.
+// - 404 Not Found if the project does not exist.
+// - 500 Internal Server Error if the database query fails.
+// On success, responds with a 200 OK status and the posts' details in JSON format.
+func GetPostsByProjectId(context *gin.Context) {
+	strId := context.Param("project_id")
+	id, err := strconv.Atoi(strId)
+	if err != nil {
+		return
+	}
+	posts, httpcode, err := database.QueryPostsByProjectId(id)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to fetch posts: %v", err))
+		return
+	}
+
+	if posts == nil || len(posts) == 0 {
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Posts within project with id '%v' not found", strId))
+		return
+	}
+
+	context.JSON(http.StatusOK, posts)
+}
+
 // CreatePost handles POST requests to create a new post
 // It expects a JSON payload that can be bound to a `types.Post` object.
 // Validates the provided owner's ID and ensures the user and project exist.
@@ -139,14 +193,12 @@ func UpdatePostInfo(context *gin.Context) {
 		return
 	}
 
-	// Parse incoming JSON
 	err = context.BindJSON(&updateData)
 	if err != nil {
 		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse update data: %v", err))
 		return
 	}
 
-	// Check if the post exists
 	existingPost, err := database.QueryPost(id)
 	if err != nil {
 		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Failed to retrieve post: %v", err))
@@ -157,7 +209,7 @@ func UpdatePostInfo(context *gin.Context) {
 		return
 	}
 
-	// Validate new owner if provided in update data
+	// validate new owner if provided in update data
 	if newOwner, ok := updateData["user"]; ok {
 		ownerID, ok := newOwner.(float64) // Assuming JSON numbers are decoded as float64
 		if !ok {
@@ -171,7 +223,7 @@ func UpdatePostInfo(context *gin.Context) {
 		}
 	}
 
-	// Validate new owner if provided in update data
+	// validate new owner if provided in update data
 	if newProject, ok := updateData["project"]; ok {
 		projectID, ok := newProject.(float64) // Assuming JSON numbers are decoded as float64
 		if !ok {
@@ -185,7 +237,6 @@ func UpdatePostInfo(context *gin.Context) {
 		}
 	}
 
-	// Filter and validate update fields
 	updatedData := make(map[string]interface{})
 	for key, value := range updateData {
 		if IsFieldAllowed(existingPost, key) {
@@ -196,7 +247,6 @@ func UpdatePostInfo(context *gin.Context) {
 		}
 	}
 
-	// Update the post in the database
 	err = database.QueryUpdatePost(id, updatedData)
 	if err != nil {
 		RespondWithError(context, http.StatusInternalServerError, fmt.Sprintf("Error updating post: %v", err))
