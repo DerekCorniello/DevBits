@@ -10,13 +10,13 @@ export default function HomeScreen() {
       {/* <TopBar /> */}
       <ScrollView>
         <Post
-          ID={1}
-          User={2}
-          Project={1}
-          Likes={69}
-          Content="This is a test post. It should be displayed in the app. This is a test post. It should be displayed in the app. This is a test post. It should be displayed in the app."
-          CreationDate="2021-01-01T00:00:00Z"
-          Comments={[]}
+          id={1}
+          user={2}
+          project={1}
+          likes={69}
+          content="This is a test post. It should be displayed in the app. This is a test post. It should be displayed in the app. This is a test post. It should be displayed in the app."
+          created_on="2021-01-01T00:00:00Z"
+          comments={[]}
         />
       </ScrollView>
       <CreatePost />
