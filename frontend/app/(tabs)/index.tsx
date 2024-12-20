@@ -1,13 +1,21 @@
 import { Post } from "@/components/Post";
-import ScrollView from "@/components/ScrollView";
+import { useThemeColor } from "@/hooks/useThemeColor";
+import { StyleSheet, ScrollView, View } from "react-native";
 import CreatePost from "@/components/CreatePost";
-import TopBar from "@/components/ui/TopBar";
-import { PostProps } from "@/constants/Types";
+import { MyHeader } from "@/components/header";
+import { MyFilter } from "@/components/filter";
 
 export default function HomeScreen() {
+  const cardBackgroundColor = useThemeColor(
+    { light: "#fff", dark: "#040607" },
+    "background"
+  );
   return (
     <>
-      {/* <TopBar /> */}
+      <MyHeader />
+      <View style={styles.filterContainer}>
+        <MyFilter />
+      </View>
       <ScrollView>
         <Post
           id={1}
@@ -23,3 +31,12 @@ export default function HomeScreen() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  filterContainer: {
+    position: "relative",
+    alignSelf: "flex-start",
+    padding: 20,
+    zIndex: 1,
+  },
+});

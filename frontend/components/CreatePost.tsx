@@ -6,8 +6,8 @@ export default function CreatePost() {
     <FAB
       visible={true}
       placement="right"
-      icon={<Icon name="code" type="octicon" color="white" size={25} />}
-      color="#004477"
+      icon={<Icon name="code" type="octicon" color="black" size={25} />}
+      color="#16ff00"
       style={{ marginBottom: 100 }}
       size="large"
     />
