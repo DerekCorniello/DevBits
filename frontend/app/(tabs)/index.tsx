@@ -2,7 +2,6 @@ import { Post } from "@/components/Post";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { StyleSheet, ScrollView, View } from "react-native";
 import CreatePost from "@/components/CreatePost";
-import { MyHeader } from "@/components/header";
 import { MyFilter } from "@/components/filter";
 
 export default function HomeScreen() {
@@ -12,7 +11,6 @@ export default function HomeScreen() {
   );
   return (
     <>
-      <MyHeader />
       <View style={styles.filterContainer}>
         <MyFilter />
       </View>
