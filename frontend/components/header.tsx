@@ -14,7 +14,7 @@ export function MyHeader() {
         centerComponent={
           <Image
             source={{
-              uri: "https://assets.static-upwork.com/org-logo/950305966420918272",
+              uri: "https://drive.google.com/uc?export=view&id=1KEfYLEUI8mWQtIUGPZXOR5BCfvid49Ul",
             }}
             style={{ width: 200, height: 50 }}
           />
