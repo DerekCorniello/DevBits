@@ -1,5 +1,5 @@
 import ScrollView from "@/components/ScrollView";
-import TopBar from "@/components/ui/TopBar";
+// import TopBar from "@/components/ui/TopBar";
 import { View, Text, StyleSheet, Animated } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { UserProps } from "@/constants/Types";
@@ -16,34 +16,29 @@ export default function User({
   return (
     <>
       {/* <TopBar /> */}
-      <ScrollView>
-        <View style={styles.header}>
-          <ThemedText type="default" style={styles.username}>
-            {username}
-          </ThemedText>
-        </View>
-        <ThemedText type="default" style={styles.bio}>
-          {bio}
+      <View style={styles.header}>
+        <ThemedText type="default" style={styles.username}>
+          {username}
         </ThemedText>
-        {links.map((link, index) => (
-          <Link key={index} href={link as ExternalPathString}>
-            <ThemedText type="default" style={styles.link}>
-              {link}
-            </ThemedText>
-          </Link>
-        ))}
-        <Text style={styles.date}>
-          {CreationDate.toLocaleString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-            hour: "numeric",
-            minute: "numeric",
-            hour12: true,
-          })}
-        </Text>
-      </ScrollView>
+      </View>
+      <Text style={styles.date}>
+        Joined on{" "}
+        {CreationDate.toLocaleString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })}
+      </Text>
+      <ThemedText type="default" style={styles.bio}>
+        {bio}
+      </ThemedText>
+      {links.map((link, index) => (
+        <Link key={index} href={link as ExternalPathString}>
+          <ThemedText type="default" style={styles.link}>
+            {link}
+          </ThemedText>
+        </Link>
+      ))}
     </>
   );
 }
@@ -66,7 +61,7 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 12,
     color: "grey",
-    alignSelf: "flex-end",
+    alignSelf: "flex-start",
     marginTop: 5,
   },
   link: {
