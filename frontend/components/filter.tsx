@@ -10,6 +10,7 @@ export const MyFilter: React.FC = () => {
   const toggleModal = () => {
     setModalVisible(!modalVisible);
     if (!modalVisible) {
+      slideAnim.setValue(-400);
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 100,
@@ -17,7 +18,7 @@ export const MyFilter: React.FC = () => {
       }).start();
     } else {
       Animated.timing(slideAnim, {
-        toValue: -400,
+        toValue: 400,
         duration: 100,
         useNativeDriver: true,
       }).start();
@@ -28,11 +29,12 @@ export const MyFilter: React.FC = () => {
       <FAB
         visible={true}
         title="Filter"
+      
         icon={<Icon name="tune" type="material" color="black" size={25} />}
         color="#16ff00"
-        size="small"
+        size="large"
         onPress={toggleModal}
-        titleStyle={{ color: "black" }}
+        titleStyle={{ color: "black",fontSize:15 }}
       />
       <Modal
         animationType="fade"
