@@ -70,11 +70,11 @@ func main() {
 	router.GET("/posts/by-user/:user_id", handlers.GetPostsByUserId)
 	router.GET("/posts/by-project/:project_id", handlers.GetPostsByProjectId)
 
-	router.POST("/comments/for-post/:post_id", handlers.CreateCommentForPost)
-	router.POST("/comments/for-project/:project_id", handlers.CreateCommentForProject)
-	router.POST("/comments/for-comment/:comment_id", handlers.CreateCommentForComment)
+	router.POST("/comments/for-post/:post_id", handlers.CreateCommentOnPost)
+	router.POST("/comments/for-project/:project_id", handlers.CreateCommentOnProject)
+	router.POST("/comments/for-comment/:comment_id", handlers.CreateCommentOnComment)
 	router.GET("/comments/:comment_id", handlers.GetCommentById)
-	router.PUT("/comments/:comment_id", handlers.UpdateCommentInfo)
+	router.PUT("/comments/:comment_id", handlers.UpdateCommentContent)
 	router.DELETE("/comments/:comment_id", handlers.DeleteComment)
 
 	router.GET("/comments/by-user/:user_id", handlers.GetCommentsByUserId)
