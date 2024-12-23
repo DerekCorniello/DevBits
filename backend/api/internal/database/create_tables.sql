@@ -51,6 +51,8 @@ CREATE TABLE Projects (
 CREATE TABLE ProjectComments (
     project_id INTEGER NOT NULL,
     comment_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
     FOREIGN KEY (project_id) REFERENCES Projects(id) ON DELETE CASCADE,
     FOREIGN KEY (comment_id) REFERENCES Comments(id) ON DELETE CASCADE,
     PRIMARY KEY (project_id, comment_id)
@@ -72,6 +74,8 @@ CREATE TABLE Posts (
 CREATE TABLE PostComments (
     post_id INTEGER NOT NULL,
     comment_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES Posts(id) ON DELETE CASCADE,
     FOREIGN KEY (comment_id) REFERENCES Comments(id) ON DELETE CASCADE,
     PRIMARY KEY (post_id, comment_id)
@@ -82,6 +86,7 @@ CREATE TABLE Comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     content TEXT NOT NULL,
     parent_comment_id INTEGER,
+    likes INTEGER NOT NULL,
     creation_date TIMESTAMP NOT NULL,
     user_id INTEGER NOT NULL,
     FOREIGN KEY (parent_comment_id) REFERENCES Comments(id) ON DELETE CASCADE,
