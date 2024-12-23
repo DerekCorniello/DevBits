@@ -78,6 +78,7 @@ func main() {
 	router.DELETE("/comments/:comment_id", handlers.DeleteComment)
 
 	router.GET("/comments/by-user/:user_id", handlers.GetCommentsByUserId)
+	router.GET("/comments/by-post/:post_id", handlers.GetCommentsByPostId)
 	router.GET("/comments/by-project/:project_id", handlers.GetCommentsByProjectId)
 	router.GET("/comments/by-comment/:comment_id", handlers.GetCommentsByCommentId)
 
