@@ -52,6 +52,7 @@ func main() {
 	router.POST("/projects", handlers.CreateProject)
 	router.PUT("/projects/:project_id", handlers.UpdateProjectInfo)
 	router.DELETE("/projects/:project_id", handlers.DeleteProject)
+    router.GET("/projects/by-user/:user_id", handlers.GetProjectsByUserId)
 
 	router.GET("/projects/:project_id/followers", handlers.GetProjectFollowers)
 	router.GET("/projects/follows/:username", handlers.GetProjectFollowing)

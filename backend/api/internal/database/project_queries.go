@@ -53,6 +53,55 @@ func QueryProject(id int) (*types.Project, error) {
 	return &project, nil
 }
 
+// QueryProjectsByUserId retrieves a user's projects by a user ID from the database.
+//
+// Parameters:
+//   - id: The unique identifier of the user to query projects on.
+//
+// Returns:
+//   - *[]types.Project: A list of the projects' details if found.
+//   - error: An error if the query fails. Returns nil for both if no project exists.
+func QueryProjectsByUserId(userId int) ([]types.Project, int, error) {
+	query := `SELECT id, name, description, status, likes, links, tags, owner, creation_date FROM Projects WHERE owner = ?;`
+	rows, err := DB.Query(query, userId)
+	if err != nil {
+		return nil, http.StatusNotFound, err
+	}
+	var projects []types.Project
+	defer rows.Close()
+
+	for rows.Next() {
+		var project types.Project
+		var linksJSON, tagsJSON string
+		err := rows.Scan(
+			&project.ID,
+			&project.Name,
+			&project.Description,
+			&project.Status,
+			&project.Likes,
+			&linksJSON,
+			&tagsJSON,
+			&project.Owner,
+			&project.CreationDate,
+		)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, http.StatusOK, nil
+			}
+			return nil, http.StatusInternalServerError, err
+		}
+
+		if err := UnmarshalFromJSON(linksJSON, &project.Links); err != nil {
+			return nil, http.StatusBadRequest, err
+		}
+		if err := UnmarshalFromJSON(tagsJSON, &project.Tags); err != nil {
+			return nil, http.StatusBadRequest, err
+		}
+	}
+
+	return projects, http.StatusOK, nil
+}
+
 // QueryCreateProject creates a new project in the database.
 //
 // Parameters:
