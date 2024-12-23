@@ -129,7 +129,7 @@ func QueryUpdatePost(id int, updatedData map[string]interface{}) error {
 //   - id: The unique identifier of the user to query.
 //
 // Returns:
-//   - *types.Post: The post details if found.
+//   - []types.Post: The post details if found.
 //   - error: An error if the query fails. Returns nil for both if no post exists.
 func QueryPostsByUserId(userId int) ([]types.Post, int, error) {
 	query := `SELECT id, user_id, project_id, content, likes, creation_date FROM Posts WHERE user_id = ?;`
@@ -140,7 +140,7 @@ func QueryPostsByUserId(userId int) ([]types.Post, int, error) {
 	}
 	defer rows.Close()
 
-	var posts []types.Post = []types.Post{}
+	var posts []types.Post
 
 	for rows.Next() {
 		var post types.Post

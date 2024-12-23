@@ -38,6 +38,33 @@ func GetProjectById(context *gin.Context) {
 	context.JSON(http.StatusOK, project)
 }
 
+// GetProjectsByUserId handles GET requests to retrieve projects information by its owning user's id.
+// It expects the `user_id` parameter in the URL and does not require a request body.
+// Returns:
+// - 400 Bad Request if the ID is invalid.
+// - 404 Not Found if the user id does not exist.
+// - 500 Internal Server Error if the database query fails.
+// On success, responds with a 200 OK status and the projects' details in JSON format.
+func GetProjectsByUserId(context *gin.Context) {
+	strId := context.Param("user_id")
+	id, err := strconv.Atoi(strId)
+	if err != nil {
+		return
+	}
+	project, httpcode, err := database.QueryProjectsByUserId(id)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to fetch projects: %v", err))
+		return
+	}
+
+	if project == nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("User with id '%v' not found", strId))
+		return
+	}
+
+	context.JSON(http.StatusOK, project)
+}
+
 // CreateProject handles POST requests to create a new project.
 // It expects a JSON payload that can be bound to a `types.Project` object.
 // Validates the provided owner's ID and ensures the user exists.
