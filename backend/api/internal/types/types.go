@@ -43,7 +43,7 @@ type Post struct {
 type Comment struct {
 	ID            int64     `json:"id"`
 	User          int64     `json:"user" binding:"required"`
-	Post          int64     `json:"post" binding:"required"`
+	Likes         int64     `json:"likes"`
 	ParentComment int64     `json:"parent_comment" binding:"required"`
 	CreationDate  time.Time `json:"created_on"`
 	Content       string    `json:"content" binding:"required"`
