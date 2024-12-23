@@ -19,13 +19,14 @@ INSERT INTO Posts (content, project_id, creation_date, user_id, likes) VALUES
     ('We''ve archived DocuHelper, but feel free to explore the code.', (SELECT id FROM Projects WHERE name = 'DocuHelper'), '2024-06-13 00:00:00', (SELECT id FROM Users WHERE username = 'tech_writer2'), 25),
     ('Updated ML Research repo with new algorithms for data analysis.', (SELECT id FROM Projects WHERE name = 'ML Research'), '2024-11-13 00:00:00', (SELECT id FROM Users WHERE username = 'data_scientist3'), 15);
 
--- Comments on Projects
-INSERT INTO Comments (content, parent_comment_id, likes, creation_date, user_id, likes) VALUES
-    ('This is a fantastic project! Can''t wait to contribute.', NULL, 5, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'dev_user1'), 0),
-    ('I love the concept, but I think the documentation could be improved.', NULL, 3, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'tech_writer2'), 0),
-    ('Great to see more open-source tools for API development!', NULL, 4, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'backend_guru4'), 0),
-    ('I agree, but the API specs seem a bit too complex for beginners.', (SELECT id FROM Comments WHERE content = 'Great to see more open-source tools for API development!'), 2, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'data_scientist3'), 0),
-    ('I hope this toolkit will integrate with other Go tools soon!', (SELECT id FROM Comments WHERE content = 'This is a fantastic project! Can''t wait to contribute.'), 1, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'ui_designer5'), 0);
+-- Comments on Projects (Parent-child relationships with hardcoded parent_comment_id)
+INSERT INTO Comments (content, parent_comment_id, likes, creation_date, user_id) VALUES
+    ('This is a fantastic project! Can''t wait to contribute.', NULL, 5, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'dev_user1')),
+    ('I love the concept, but I think the documentation could be improved.', NULL, 3, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'tech_writer2')),
+    ('Great to see more open-source tools for API development!', NULL, 4, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'backend_guru4')),
+    ('I agree, but the API specs seem a bit too complex for beginners.', 3, 2, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'data_scientist3')),  -- Hardcoded parent_comment_id = 3
+    ('I hope this toolkit will integrate with other Go tools soon!', 1, 1, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'ui_designer5')),  -- Hardcoded parent_comment_id = 1
+    ('I agree, the documentation is lacking in detail.', 2, 1, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'data_scientist3'));  -- Hardcoded parent_comment_id = 2
 
 -- ProjectComments relations (Mapping comments to projects)
 INSERT INTO ProjectComments (project_id, comment_id, user_id) VALUES
@@ -33,15 +34,17 @@ INSERT INTO ProjectComments (project_id, comment_id, user_id) VALUES
     ((SELECT id FROM Projects WHERE name = 'OpenAPI Toolkit'), (SELECT id FROM Comments WHERE content = 'I love the concept, but I think the documentation could be improved.'), (SELECT id FROM Users WHERE username = 'tech_writer2')),
     ((SELECT id FROM Projects WHERE name = 'OpenAPI Toolkit'), (SELECT id FROM Comments WHERE content = 'Great to see more open-source tools for API development!'), (SELECT id FROM Users WHERE username = 'backend_guru4')),
     ((SELECT id FROM Projects WHERE name = 'OpenAPI Toolkit'), (SELECT id FROM Comments WHERE content = 'I agree, but the API specs seem a bit too complex for beginners.'), (SELECT id FROM Users WHERE username = 'data_scientist3')),
-    ((SELECT id FROM Projects WHERE name = 'OpenAPI Toolkit'), (SELECT id FROM Comments WHERE content = 'I hope this toolkit will integrate with other Go tools soon!'), (SELECT id FROM Users WHERE username = 'ui_designer5'));
+    ((SELECT id FROM Projects WHERE name = 'OpenAPI Toolkit'), (SELECT id FROM Comments WHERE content = 'I hope this toolkit will integrate with other Go tools soon!'), (SELECT id FROM Users WHERE username = 'ui_designer5')),
+    ((SELECT id FROM Projects WHERE name = 'OpenAPI Toolkit'), (SELECT id FROM Comments WHERE content = 'I agree, the documentation is lacking in detail.'), (SELECT id FROM Users WHERE username = 'data_scientist3'));
 
--- Comments on Posts
+-- Comments on Posts (Parent-child relationships with hardcoded parent_comment_id)
 INSERT INTO Comments (content, parent_comment_id, likes, creation_date, user_id) VALUES
     ('Awesome update! I''ll try it out.', NULL, 2, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'backend_guru4')),
     ('Thanks for sharing! Will this feature be extended soon?', NULL, 1, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'data_scientist3')),
     ('Great work, looking forward to more updates!', NULL, 4, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'ui_designer5')),
-    ('Will this be compatible with earlier versions of OpenAPI?', (SELECT id FROM Comments WHERE content = 'Thanks for sharing! Will this feature be extended soon?'), 1, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'tech_writer2')),
-    ('I hope the next update addresses performance improvements.', (SELECT id FROM Comments WHERE content = 'Awesome update! I''ll try it out.'), 3, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'data_scientist3'));
+    ('Will this be compatible with earlier versions of OpenAPI?', 2, 1, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'tech_writer2')),  -- Hardcoded parent_comment_id = 2
+    ('I hope the next update addresses performance improvements.', 1, 3, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'data_scientist3')),  -- Hardcoded parent_comment_id = 1
+    ('Looking forward to testing it!', 3, 2, '2024-12-23 00:00:00', (SELECT id FROM Users WHERE username = 'dev_user1'));  -- Hardcoded parent_comment_id = 3
 
 -- PostComments relations (Mapping comments to posts)
 INSERT INTO PostComments (post_id, comment_id, user_id) VALUES
@@ -49,4 +52,5 @@ INSERT INTO PostComments (post_id, comment_id, user_id) VALUES
     ((SELECT id FROM Posts WHERE content = 'Excited to release the first version of OpenAPI Toolkit!'), (SELECT id FROM Comments WHERE content = 'Thanks for sharing! Will this feature be extended soon?'), (SELECT id FROM Users WHERE username = 'data_scientist3')),
     ((SELECT id FROM Posts WHERE content = 'Excited to release the first version of OpenAPI Toolkit!'), (SELECT id FROM Comments WHERE content = 'Great work, looking forward to more updates!'), (SELECT id FROM Users WHERE username = 'ui_designer5')),
     ((SELECT id FROM Posts WHERE content = 'Excited to release the first version of OpenAPI Toolkit!'), (SELECT id FROM Comments WHERE content = 'Will this be compatible with earlier versions of OpenAPI?'), (SELECT id FROM Users WHERE username = 'tech_writer2')),
-    ((SELECT id FROM Posts WHERE content = 'Excited to release the first version of OpenAPI Toolkit!'), (SELECT id FROM Comments WHERE content = 'I hope the next update addresses performance improvements.'), (SELECT id FROM Users WHERE username = 'data_scientist3'));
+    ((SELECT id FROM Posts WHERE content = 'Excited to release the first version of OpenAPI Toolkit!'), (SELECT id FROM Comments WHERE content = 'I hope the next update addresses performance improvements.'), (SELECT id FROM Users WHERE username = 'data_scientist3')),
+    ((SELECT id FROM Posts WHERE content = 'Excited to release the first version of OpenAPI Toolkit!'), (SELECT id FROM Comments WHERE content = 'Looking forward to testing it!'), (SELECT id FROM Users WHERE username = 'dev_user1'));

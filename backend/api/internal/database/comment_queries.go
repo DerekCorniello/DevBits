@@ -18,7 +18,7 @@ import (
 //   - *types.Comment: The comment details if found.
 //   - error: An error if the query fails. Returns nil for both if no comment exists.
 func QueryComment(id int) (*types.Comment, error) {
-	query := `SELECT id, user_id, content, likes, creation_date, parent_comment_id FROM Posts WHERE id = ?;`
+	query := `SELECT id, user_id, content, likes, creation_date, parent_comment_id FROM Comments WHERE id = ?;`
 	row := DB.QueryRow(query, id)
 	var comment types.Comment
 
@@ -437,7 +437,7 @@ func QueryUpdateCommentContent(id int, newContent string) (int16, error) {
 		return 500, fmt.Errorf("Failed to fetch comment creation date: %v", err)
 	}
 
-	createdAt, err := time.Parse("2006-01-02 15:04:05", creationDate)
+	createdAt, err := time.Parse("2006-01-02T15:04:05Z", creationDate)
 	if err != nil {
 		return 500, fmt.Errorf("Failed to parse creation date: %v", err)
 	}

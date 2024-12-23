@@ -224,10 +224,10 @@ func CreateCommentOnProject(context *gin.Context) {
 		return
 	}
 
-	strId := context.Param("post_id")
+	strId := context.Param("project_id")
 	projId, err := strconv.Atoi(strId)
 	if err != nil {
-		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse post id: %v", err))
+		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse project id: %v", err))
 		return
 	}
 
@@ -281,7 +281,7 @@ func CreateCommentOnComment(context *gin.Context) {
 		return
 	}
 
-	strId := context.Param("post_id")
+	strId := context.Param("comment_id")
 	commId, err := strconv.Atoi(strId)
 	if err != nil {
 		RespondWithError(context, http.StatusBadRequest, fmt.Sprintf("Failed to parse post id: %v", err))
@@ -322,8 +322,8 @@ func CreateCommentOnComment(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Reply created successfully with id '%v'", id)})
 }
 
-// DeletePost handles DELETE requests to delete a post.
-// It expects the `post_id` parameter in the URL.
+// DeleteComment handles DELETE requests to delete a post.
+// It expects the `comment_id` parameter in the URL.
 // Returns:
 // - 400 Bad Request if the post_id is invalid.
 // - 404 Not Found if no post is found with the given id.
@@ -356,6 +356,13 @@ func DeleteComment(context *gin.Context) {
 	})
 }
 
+// UpdateCommentContent handles DELETE requests to delete a post.
+// It expects the `comment_id` parameter in the URL.
+// Returns:
+// - 400 Bad Request if the post_id is invalid.
+// - 404 Not Found if no post is found with the given id.
+// - 500 Internal Server Error if a database query fails.
+// On success, responds with a 200 OK status and a message confirming the post deletion.
 func UpdateCommentContent(context *gin.Context) {
 	id, err := strconv.Atoi(context.Param("comment_id"))
 	if err != nil {
