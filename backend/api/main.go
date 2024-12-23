@@ -35,52 +35,57 @@ func main() {
 
 	router.GET("/health", HealthCheck)
 
+	// Users
 	router.GET("/users/:username", handlers.GetUserByUsername)
 	router.POST("/users", handlers.CreateUser)
 	router.PUT("/users/:username", handlers.UpdateUserInfo)
 	router.DELETE("/users/:username", handlers.DeleteUser)
 
 	router.GET("/users/:username/followers", handlers.GetUsersFollowers)
-	router.GET("/users/:username/follows", handlers.GetUsersFollowing)
+	router.GET("/users/:username/following", handlers.GetUsersFollowing)
 	router.GET("/users/:username/followers/usernames", handlers.GetUsersFollowersUsernames)
-	router.GET("/users/:username/follows/usernames", handlers.GetUsersFollowingUsernames)
+	router.GET("/users/:username/following/usernames", handlers.GetUsersFollowingUsernames)
 
-	router.POST("/users/:username/follow/:new_follow", handlers.FollowUser)
-	router.POST("/users/:username/unfollow/:unfollow", handlers.UnfollowUser)
+	router.POST("/users/:username/follow/:target_user", handlers.FollowUser)
+	router.POST("/users/:username/unfollow/:target_user", handlers.UnfollowUser)
 
+	// Projects
 	router.GET("/projects/:project_id", handlers.GetProjectById)
 	router.POST("/projects", handlers.CreateProject)
 	router.PUT("/projects/:project_id", handlers.UpdateProjectInfo)
 	router.DELETE("/projects/:project_id", handlers.DeleteProject)
-	router.GET("/projects/by-user/:user_id", handlers.GetProjectsByUserId)
+
+	router.GET("/users/:user_id/projects", handlers.GetProjectsByUserId)
 
 	router.GET("/projects/:project_id/followers", handlers.GetProjectFollowers)
-	router.GET("/projects/follows/:username", handlers.GetProjectFollowing)
+	router.GET("/users/:username/projects/following", handlers.GetProjectFollowing)
 	router.GET("/projects/:project_id/followers/usernames", handlers.GetProjectFollowersUsernames)
-	router.GET("/projects/follows/:username/names", handlers.GetProjectFollowingNames)
+	router.GET("/users/:username/projects/following/names", handlers.GetProjectFollowingNames)
 
-	router.POST("/projects/:username/follow/:project_id", handlers.FollowProject)
-	router.POST("/projects/:username/unfollow/:project_id", handlers.UnfollowProject)
+	router.POST("/users/:username/follow/project/:project_id", handlers.FollowProject)
+	router.POST("/users/:username/unfollow/project/:project_id", handlers.UnfollowProject)
 
+	// Posts
 	router.GET("/posts/:post_id", handlers.GetPostById)
 	router.POST("/posts", handlers.CreatePost)
 	router.PUT("/posts/:post_id", handlers.UpdatePostInfo)
 	router.DELETE("/posts/:post_id", handlers.DeletePost)
 
-	router.GET("/posts/by-user/:user_id", handlers.GetPostsByUserId)
-	router.GET("/posts/by-project/:project_id", handlers.GetPostsByProjectId)
+	router.GET("/users/:user_id/posts", handlers.GetPostsByUserId)
+	router.GET("/projects/:project_id/posts", handlers.GetPostsByProjectId)
 
-	router.POST("/comments/for-post/:post_id", handlers.CreateCommentOnPost)
-	router.POST("/comments/for-project/:project_id", handlers.CreateCommentOnProject)
-	router.POST("/comments/for-comment/:comment_id", handlers.CreateCommentOnComment)
+	// Comments
+	router.POST("/posts/:post_id/comments", handlers.CreateCommentOnPost)
+	router.POST("/projects/:project_id/comments", handlers.CreateCommentOnProject)
+	router.POST("/comments/:comment_id/reply", handlers.CreateCommentOnComment)
 	router.GET("/comments/:comment_id", handlers.GetCommentById)
 	router.PUT("/comments/:comment_id", handlers.UpdateCommentContent)
 	router.DELETE("/comments/:comment_id", handlers.DeleteComment)
 
-	router.GET("/comments/by-user/:user_id", handlers.GetCommentsByUserId)
-	router.GET("/comments/by-post/:post_id", handlers.GetCommentsByPostId)
-	router.GET("/comments/by-project/:project_id", handlers.GetCommentsByProjectId)
-	router.GET("/comments/by-comment/:comment_id", handlers.GetCommentsByCommentId)
+	router.GET("/users/:user_id/comments", handlers.GetCommentsByUserId)
+	router.GET("/posts/:post_id/comments", handlers.GetCommentsByPostId)
+	router.GET("/projects/:project_id/comments", handlers.GetCommentsByProjectId)
+	router.GET("/comments/:comment_id/replies", handlers.GetCommentsByCommentId)
 
 	var dbinfo, dbtype string
 	if DEBUG {
