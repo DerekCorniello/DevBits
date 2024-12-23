@@ -52,7 +52,7 @@ func main() {
 	router.POST("/projects", handlers.CreateProject)
 	router.PUT("/projects/:project_id", handlers.UpdateProjectInfo)
 	router.DELETE("/projects/:project_id", handlers.DeleteProject)
-    router.GET("/projects/by-user/:user_id", handlers.GetProjectsByUserId)
+	router.GET("/projects/by-user/:user_id", handlers.GetProjectsByUserId)
 
 	router.GET("/projects/:project_id/followers", handlers.GetProjectFollowers)
 	router.GET("/projects/follows/:username", handlers.GetProjectFollowing)
@@ -69,6 +69,17 @@ func main() {
 
 	router.GET("/posts/by-user/:user_id", handlers.GetPostsByUserId)
 	router.GET("/posts/by-project/:project_id", handlers.GetPostsByProjectId)
+
+	router.POST("/comments/for-post/:post_id", handlers.CreateCommentForPost)
+	router.POST("/comments/for-project/:project_id", handlers.CreateCommentForProject)
+	router.POST("/comments/for-comment/:comment_id", handlers.CreateCommentForComment)
+	router.GET("/comments/:comment_id", handlers.GetCommentById)
+	router.PUT("/comments/:comment_id", handlers.UpdateCommentInfo)
+	router.DELETE("/comments/:comment_id", handlers.DeleteComment)
+
+	router.GET("/comments/by-user/:user_id", handlers.GetCommentsByUserId)
+	router.GET("/comments/by-project/:project_id", handlers.GetCommentsByProjectId)
+	router.GET("/comments/by-comment/:comment_id", handlers.GetCommentsByCommentId)
 
 	var dbinfo, dbtype string
 	if DEBUG {

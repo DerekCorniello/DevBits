@@ -81,11 +81,9 @@ CREATE TABLE PostComments (
 CREATE TABLE Comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     content TEXT NOT NULL,
-    post_id INTEGER NOT NULL,
     parent_comment_id INTEGER,
     creation_date TIMESTAMP NOT NULL,
     user_id INTEGER NOT NULL,
-    FOREIGN KEY (post_id) REFERENCES Posts(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_comment_id) REFERENCES Comments(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
 );
