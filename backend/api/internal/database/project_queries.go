@@ -429,3 +429,118 @@ func RemoveProjectFollow(username string, projectID string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+// CreateProjectLike creates a like relationship between a user and a project.
+//
+// Parameters:
+//   - username: The username of the user creating the like.
+//   - projectID: The ID of the project to unfollow (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or the user is not liking the project.
+func CreateProjectLike(username string, strProjId string) (int, error) {
+	// get user ID from username, implicitly checks if user exists
+	user_id, err := GetUserIdByUsername(username)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred getting id for username: %v", err)
+	}
+
+	// parse project ID
+	projId, err := strconv.Atoi(strProjId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred parsing user id: %v", strProjId)
+	}
+
+	// verify project exists
+	_, err = QueryProject(projId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred verifying the project exists: %v", err)
+	}
+
+	// check if the like already exists
+	var exists bool
+	query := `SELECT EXISTS (
+                 SELECT 1 FROM ProjectLikes WHERE user_id = ? AND project_id = ?
+              )`
+	err = DB.QueryRow(query, user_id, projId).Scan(&exists)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred checking like existence: %v", err)
+	}
+	if exists {
+		// like already exists, but we return success to keep it idempotent
+		return http.StatusCreated, nil
+	}
+
+	// insert the like
+	insertQuery := `INSERT INTO ProjectLikes (user_id, project_id) VALUES (?, ?)`
+	_, err = DB.Exec(insertQuery, user_id, projId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to insert project like: %v", err)
+	}
+
+	// update the likes column
+	updateQuery := `UPDATE Projects SET likes = likes + 1 WHERE id = ?`
+	_, err = DB.Exec(updateQuery, projId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
+	}
+
+	return http.StatusCreated, nil
+}
+
+// RemoveProjectLike deletes a like relationship between a user and a project.
+//
+// Parameters:
+//   - username: The username of the user removing the like.
+//   - projectID: The ID of the project to unfollow (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or the user is not liking the project.
+func RemoveProjectLike(username string, strProjId string) (int, error) {
+	// get user ID
+	user_id, err := GetUserIdByUsername(username)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred getting id for username: %v", err)
+	}
+
+	// parse project ID
+	projId, err := strconv.Atoi(strProjId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred parsing username id: %v", strProjId)
+	}
+
+	// verify project exists
+	_, err = QueryProject(projId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred verifying the project exists: %v", err)
+	}
+
+	// perform the delete operation
+	deleteQuery := `DELETE FROM ProjectLikes WHERE user_id = ? AND project_id = ?`
+	result, err := DB.Exec(deleteQuery, user_id, projId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to delete project like: %v", err)
+	}
+
+	// check if any rows were actually deleted
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to check rows affected: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		// if no rows were deleted, return success to keep idempotency
+		return http.StatusNoContent, nil
+	}
+
+	// update the likes column
+	updateQuery := `UPDATE Projects SET likes = likes - 1 WHERE id = ?`
+	_, err = DB.Exec(updateQuery, projId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
+	}
+
+	return http.StatusOK, nil
+}
