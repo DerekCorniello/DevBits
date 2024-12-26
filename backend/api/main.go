@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -20,6 +21,10 @@ func HealthCheck(context *gin.Context) {
 }
 
 func main() {
+	if DEBUG {
+		gin.SetMode(gin.DebugMode)
+	}
+	log.SetOutput(os.Stdout)
 	logger.InitLogger()
 
 	router := gin.Default()
@@ -62,8 +67,8 @@ func main() {
 	router.POST("/projects/:username/follow/:project_id", handlers.FollowProject)
 	router.POST("/projects/:username/unfollow/:project_id", handlers.UnfollowProject)
 
-    router.POST("/projects/:username/likes/:project_id", handlers.LikeProject)
-    router.POST("/projects/:username/unlikes/:project_id", handlers.UnlikeProject)
+	router.POST("/projects/:username/likes/:project_id", handlers.LikeProject)
+	router.POST("/projects/:username/unlikes/:project_id", handlers.UnlikeProject)
 
 	router.GET("/posts/:post_id", handlers.GetPostById)
 	router.POST("/posts", handlers.CreatePost)
@@ -72,6 +77,9 @@ func main() {
 
 	router.GET("/posts/by-user/:user_id", handlers.GetPostsByUserId)
 	router.GET("/posts/by-project/:project_id", handlers.GetPostsByProjectId)
+
+	router.POST("/posts/:username/likes/:post_id", handlers.LikePost)
+	router.POST("/posts/:username/unlikes/:post_id", handlers.UnlikePost)
 
 	router.POST("/comments/for-post/:post_id", handlers.CreateCommentOnPost)
 	router.POST("/comments/for-project/:project_id", handlers.CreateCommentOnProject)
@@ -84,6 +92,12 @@ func main() {
 	router.GET("/comments/by-post/:post_id", handlers.GetCommentsByPostId)
 	router.GET("/comments/by-project/:project_id", handlers.GetCommentsByProjectId)
 	router.GET("/comments/by-comment/:comment_id", handlers.GetCommentsByCommentId)
+
+	router.POST("/comments/:username/likes/:comment_id", handlers.LikeComment)
+	router.POST("/comments/:username/unlikes/:comment_id", handlers.UnlikeComment)
+
+	log.Println("we are in the func (log.Println)")
+	fmt.Println("we are in the func (fmt.Println)")
 
 	var dbinfo, dbtype string
 	if DEBUG {

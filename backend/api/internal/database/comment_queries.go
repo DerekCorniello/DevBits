@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+    "strconv"
 
 	"backend/api/internal/types"
 )
@@ -462,4 +463,120 @@ func QueryUpdateCommentContent(id int, newContent string) (int16, error) {
 	}
 
 	return 200, nil
+}
+
+
+// CreateCommentLike creates a like relationship between a user and a comment.
+//
+// Parameters:
+//   - username: The username of the user creating the like.
+//   - strCommentID: The ID of the comment to like (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or the user is not liking the comment.
+func CreateCommentLike(username string, strCommentId string) (int, error) {
+	// get user ID from username, implicitly checks if user exists
+	user_id, err := GetUserIdByUsername(username)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred getting id for username: %v", err)
+	}
+
+	// parse comment ID
+	commentId, err := strconv.Atoi(strCommentId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred parsing user id: %v", err)
+	}
+
+	// verify comment exists
+	_, err = QueryComment(commentId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred verifying the comment exists: %v", err)
+	}
+
+	// check if the like already exists
+	var exists bool
+	query := `SELECT EXISTS (
+                 SELECT 1 FROM CommentLikes WHERE user_id = ? AND post_id = ?
+              )`
+	err = DB.QueryRow(query, user_id, commentId).Scan(&exists)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred checking like existence: %v", err)
+	}
+	if exists {
+		// like already exists, but we return success to keep it idempotent
+		return http.StatusCreated, nil
+	}
+
+	// insert the like
+	insertQuery := `INSERT INTO CommentLikes (user_id, post_id) VALUES (?, ?)`
+	_, err = DB.Exec(insertQuery, user_id, commentId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to insert comment like: %v", err)
+	}
+
+	// update the likes column
+	updateQuery := `UPDATE Comments SET likes = likes + 1 WHERE id = ?`
+	_, err = DB.Exec(updateQuery, commentId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
+	}
+
+	return http.StatusCreated, nil
+}
+
+// RemoveCommentLike deletes a like relationship between a user and a comment.
+//
+// Parameters:
+//   - username: The username of the user removing the like.
+//   - strPostId: The ID of the comment to unlike (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or the user is not liking the comment.
+func RemoveCommentLike(username string, strCommentId string) (int, error) {
+	// get user ID
+	user_id, err := GetUserIdByUsername(username)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred getting id for username: %v", err)
+	}
+
+	// parse post ID
+	commentId, err := strconv.Atoi(strCommentId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred parsing username id: %v", err)
+	}
+
+	// verify post exists
+	_, err = QueryPost(commentId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred verifying the comment exists: %v", err)
+	}
+
+	// perform the delete operation
+	deleteQuery := `DELETE FROM CommentLikes WHERE user_id = ? AND post_id = ?`
+	result, err := DB.Exec(deleteQuery, user_id, commentId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to delete comment like: %v", err)
+	}
+
+	// check if any rows were actually deleted
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to check rows affected: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		// if no rows were deleted, return success to keep idempotency
+		return http.StatusNoContent, nil
+	}
+
+	// update the likes column
+	updateQuery := `UPDATE Comments SET likes = likes - 1 WHERE id = ?`
+	_, err = DB.Exec(updateQuery, commentId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
+	}
+
+	return http.StatusOK, nil
 }

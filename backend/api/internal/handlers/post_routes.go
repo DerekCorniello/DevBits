@@ -268,3 +268,37 @@ func UpdatePostInfo(context *gin.Context) {
 		"post":    updatedPost,
 	})
 }
+
+// LikePost handles POST requests to like a post.
+// It expects the `username` and `post_id` parameters in the URL.
+// Returns:
+// - Appropriate error code (404 if missing data, 500 if error) for database failures or invalid input.
+// On success, responds with a 200 OK status and a confirmation message.
+func LikePost(context *gin.Context) {
+	username := context.Param("username")
+	postId := context.Param("post_id")
+
+	httpcode, err := database.CreatePostLike(username, postId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to like post: %v", err))
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v likes %v", username, postId)})
+}
+
+// UnlikePost handles POST requests to unlike a post.
+// It expects the `username` and `post_id` parameters in the URL.
+// Returns:
+// - Appropriate error code (404 if missing data, 500 if error) for database failures or invalid input.
+// On success, responds with a 200 OK status and a confirmation message.
+func UnlikePost(context *gin.Context) {
+	username := context.Param("username")
+	postId := context.Param("post_id")
+
+	httpcode, err := database.RemovePostLike(username, postId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to unlike post: %v", err))
+		return
+	}
+	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v unliked %v", username, postId)})
+}

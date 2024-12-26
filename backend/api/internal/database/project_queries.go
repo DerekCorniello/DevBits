@@ -434,7 +434,7 @@ func RemoveProjectFollow(username string, projectID string) (int, error) {
 //
 // Parameters:
 //   - username: The username of the user creating the like.
-//   - projectID: The ID of the project to unfollow (as a string, converted internally).
+//   - projectID: The ID of the project to like (as a string, converted internally).
 //
 // Returns:
 //   - int: HTTP-like status code indicating the result of the operation.
@@ -449,7 +449,7 @@ func CreateProjectLike(username string, strProjId string) (int, error) {
 	// parse project ID
 	projId, err := strconv.Atoi(strProjId)
 	if err != nil {
-		return http.StatusInternalServerError, fmt.Errorf("An error occurred parsing user id: %v", strProjId)
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred parsing proj_id: %v", err)
 	}
 
 	// verify project exists
@@ -493,7 +493,7 @@ func CreateProjectLike(username string, strProjId string) (int, error) {
 //
 // Parameters:
 //   - username: The username of the user removing the like.
-//   - projectID: The ID of the project to unfollow (as a string, converted internally).
+//   - projectID: The ID of the project to unlike (as a string, converted internally).
 //
 // Returns:
 //   - int: HTTP-like status code indicating the result of the operation.
@@ -508,7 +508,7 @@ func RemoveProjectLike(username string, strProjId string) (int, error) {
 	// parse project ID
 	projId, err := strconv.Atoi(strProjId)
 	if err != nil {
-		return http.StatusInternalServerError, fmt.Errorf("An error occurred parsing username id: %v", strProjId)
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred parsing username id: %v", err)
 	}
 
 	// verify project exists
