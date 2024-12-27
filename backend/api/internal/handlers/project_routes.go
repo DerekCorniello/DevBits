@@ -330,3 +330,54 @@ func UnfollowProject(context *gin.Context) {
 	}
 	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v unfollowed %v", username, projectId)})
 }
+
+// LikeProject handles POST requests to like a project.
+// It expects the `username` and `project_id` parameters in the URL.
+// Returns:
+// - Appropriate error code (404 if missing data, 500 if error) for database failures or invalid input.
+// On success, responds with a 200 OK status and a confirmation message.
+func LikeProject(context *gin.Context) {
+	username := context.Param("username")
+	projectId := context.Param("project_id")
+
+	httpcode, err := database.CreateProjectLike(username, projectId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to like project: %v", err))
+		return
+	}
+	context.JSON(httpcode, gin.H{"message": fmt.Sprintf("%v likes %v", username, projectId)})
+}
+
+// UnlikeProject handles POST requests to unlike a project.
+// It expects the `username` and `project_id` parameters in the URL.
+// Returns:
+// - Appropriate error code (404 if missing data, 500 if error) for database failures or invalid input.
+// On success, responds with a 200 OK status and a confirmation message.
+func UnlikeProject(context *gin.Context) {
+	username := context.Param("username")
+	projectId := context.Param("project_id")
+
+	httpcode, err := database.RemoveProjectLike(username, projectId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to unlike project: %v", err))
+		return
+	}
+	context.JSON(httpcode, gin.H{"message": fmt.Sprintf("%v unliked %v", username, projectId)})
+}
+
+// IsProjectLiked handles GET requests to query for a project like.
+// It expects the `username` and `project_id` parameters in the URL.
+// Returns:
+// - Appropriate error code for database failures or invalid input.
+// On success, responds with a 200 OK status and a status message.
+func IsProjectLiked(context *gin.Context) {
+	username := context.Param("username")
+	projectId := context.Param("project_id")
+
+	httpcode, exists, err := database.QueryProjectLike(username, projectId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to query for project like: %v", err))
+		return
+	}
+	context.JSON(httpcode, gin.H{"status": exists})
+}

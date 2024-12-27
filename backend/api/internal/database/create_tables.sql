@@ -86,7 +86,7 @@ CREATE TABLE Comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     content TEXT NOT NULL,
     parent_comment_id INTEGER,
-    likes INTEGER NOT NULL,
+    likes INTEGER DEFAULT 0,
     creation_date TIMESTAMP NOT NULL,
     user_id INTEGER NOT NULL,
     FOREIGN KEY (parent_comment_id) REFERENCES Comments(id) ON DELETE CASCADE,
