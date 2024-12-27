@@ -248,7 +248,7 @@ func CreatePostLike(username string, strPostId string) (int, error) {
 	}
 	if exists {
 		// like already exists, but we return success to keep it idempotent
-		return http.StatusCreated, nil
+		return http.StatusOK, nil
 	}
 
 	// insert the like
@@ -322,4 +322,49 @@ func RemovePostLike(username string, strPostId string) (int, error) {
 	}
 
 	return http.StatusOK, nil
+}
+
+// QueryPostLike queries for a like relationship between a user and a post.
+//
+// Parameters:
+//   - username: The username of the user removing the like.
+//   - postID: The ID of the post to unlike (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or.
+func QueryPostLike(username string, strPostId string) (int, bool, error) {
+	// get user ID from username, implicitly checks if user exists
+	user_id, err := GetUserIdByUsername(username)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred getting id for username: %v", err)
+	}
+
+	// parse post ID
+	postId, err := strconv.Atoi(strPostId)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred parsing post_id: %v", err)
+	}
+
+	// verify post exists
+	_, err = QueryPost(postId)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred verifying the post exists: %v", err)
+	}
+
+	// check if the like already exists
+	var exists bool
+	query := `SELECT EXISTS (
+                 SELECT 1 FROM PostLikes WHERE user_id = ? AND post_id = ?
+              )`
+	err = DB.QueryRow(query, user_id, postId).Scan(&exists)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred checking like existence: %v", err)
+	}
+	if exists {
+		return http.StatusOK, true, nil
+	} else {
+		return http.StatusOK, false, nil
+	}
+
 }

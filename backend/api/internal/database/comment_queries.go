@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
-    "strconv"
 
 	"backend/api/internal/types"
 )
@@ -465,7 +465,6 @@ func QueryUpdateCommentContent(id int, newContent string) (int16, error) {
 	return 200, nil
 }
 
-
 // CreateCommentLike creates a like relationship between a user and a comment.
 //
 // Parameters:
@@ -497,7 +496,7 @@ func CreateCommentLike(username string, strCommentId string) (int, error) {
 	// check if the like already exists
 	var exists bool
 	query := `SELECT EXISTS (
-                 SELECT 1 FROM CommentLikes WHERE user_id = ? AND post_id = ?
+                 SELECT 1 FROM CommentLikes WHERE user_id = ? AND comment_id = ?
               )`
 	err = DB.QueryRow(query, user_id, commentId).Scan(&exists)
 	if err != nil {
@@ -505,11 +504,11 @@ func CreateCommentLike(username string, strCommentId string) (int, error) {
 	}
 	if exists {
 		// like already exists, but we return success to keep it idempotent
-		return http.StatusCreated, nil
+		return http.StatusOK, nil
 	}
 
 	// insert the like
-	insertQuery := `INSERT INTO CommentLikes (user_id, post_id) VALUES (?, ?)`
+	insertQuery := `INSERT INTO CommentLikes (user_id, comment_id) VALUES (?, ?)`
 	_, err = DB.Exec(insertQuery, user_id, commentId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to insert comment like: %v", err)
@@ -554,7 +553,7 @@ func RemoveCommentLike(username string, strCommentId string) (int, error) {
 	}
 
 	// perform the delete operation
-	deleteQuery := `DELETE FROM CommentLikes WHERE user_id = ? AND post_id = ?`
+	deleteQuery := `DELETE FROM CommentLikes WHERE user_id = ? AND comment_id = ?`
 	result, err := DB.Exec(deleteQuery, user_id, commentId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to delete comment like: %v", err)
@@ -579,4 +578,49 @@ func RemoveCommentLike(username string, strCommentId string) (int, error) {
 	}
 
 	return http.StatusOK, nil
+}
+
+// QueryCommentLike queries for a like relationship between a user and a post.
+//
+// Parameters:
+//   - username: The username of the user removing the like.
+//   - postID: The ID of the post to unlike (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or.
+func QueryCommentLike(username string, strCommId string) (int, bool, error) {
+	// get user ID from username, implicitly checks if user exists
+	user_id, err := GetUserIdByUsername(username)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred getting id for username: %v", err)
+	}
+
+	// parse post ID
+	commId, err := strconv.Atoi(strCommId)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred parsing comment_id: %v", err)
+	}
+
+	// verify post exists
+	_, err = QueryComment(commId)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred verifying the comment exists: %v", err)
+	}
+
+	// check if the like already exists
+	var exists bool
+	query := `SELECT EXISTS (
+                 SELECT 1 FROM CommentLikes WHERE user_id = ? AND comment_id = ?
+              )`
+	err = DB.QueryRow(query, user_id, commId).Scan(&exists)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred checking like existence: %v", err)
+	}
+	if exists {
+		return http.StatusOK, true, nil
+	} else {
+		return http.StatusOK, false, nil
+	}
+
 }

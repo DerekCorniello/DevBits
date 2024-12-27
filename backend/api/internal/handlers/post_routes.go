@@ -302,3 +302,20 @@ func UnlikePost(context *gin.Context) {
 	}
 	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v unliked %v", username, postId)})
 }
+
+// IsPostLiked handles GET requests to query for a post like.
+// It expects the `username` and `post_id` parameters in the URL.
+// Returns:
+// - Appropriate error code for database failures or invalid input.
+// On success, responds with a 200 OK status and a status message.
+func IsPostLiked(context *gin.Context) {
+	username := context.Param("username")
+	postId := context.Param("post_id")
+
+	httpcode, exists, err := database.QueryPostLike(username, postId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to query for post like: %v", err))
+		return
+	}
+	context.JSON(httpcode, gin.H{"status": exists})
+}

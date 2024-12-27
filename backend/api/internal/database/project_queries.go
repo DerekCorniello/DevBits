@@ -469,7 +469,7 @@ func CreateProjectLike(username string, strProjId string) (int, error) {
 	}
 	if exists {
 		// like already exists, but we return success to keep it idempotent
-		return http.StatusCreated, nil
+		return http.StatusOK, nil
 	}
 
 	// insert the like
@@ -543,4 +543,49 @@ func RemoveProjectLike(username string, strProjId string) (int, error) {
 	}
 
 	return http.StatusOK, nil
+}
+
+// QueryProjectLike queries for a like relationship between a user and a project.
+//
+// Parameters:
+//   - username: The username of the user removing the like.
+//   - projectID: The ID of the project to unlike (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or.
+func QueryProjectLike(username string, strProjId string) (int, bool, error) {
+	// get user ID from username, implicitly checks if user exists
+	user_id, err := GetUserIdByUsername(username)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred getting id for username: %v", err)
+	}
+
+	// parse project ID
+	projId, err := strconv.Atoi(strProjId)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred parsing proj_id: %v", err)
+	}
+
+	// verify project exists
+	_, err = QueryProject(projId)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred verifying the project exists: %v", err)
+	}
+
+	// check if the like already exists
+	var exists bool
+	query := `SELECT EXISTS (
+                 SELECT 1 FROM ProjectLikes WHERE user_id = ? AND project_id = ?
+              )`
+	err = DB.QueryRow(query, user_id, projId).Scan(&exists)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred checking like existence: %v", err)
+	}
+	if exists {
+		return http.StatusOK, true, nil
+	} else {
+		return http.StatusOK, false, nil
+	}
+
 }

@@ -445,3 +445,20 @@ func UnlikeComment(context *gin.Context) {
 	}
 	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v unliked %v", username, commentId)})
 }
+
+// IsCommentLiked handles GET requests to query for a comment like.
+// It expects the `username` and `comment_id` parameters in the URL.
+// Returns:
+// - Appropriate error code for database failures or invalid input.
+// On success, responds with a 200 OK status and a status message.
+func IsCommentLiked(context *gin.Context) {
+	username := context.Param("username")
+	commentId := context.Param("comment_id")
+
+	httpcode, exists, err := database.QueryCommentLike(username, commentId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to query for comment like: %v", err))
+		return
+	}
+	context.JSON(httpcode, gin.H{"status": exists})
+}

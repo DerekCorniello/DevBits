@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -69,6 +68,7 @@ func main() {
 
 	router.POST("/projects/:username/likes/:project_id", handlers.LikeProject)
 	router.POST("/projects/:username/unlikes/:project_id", handlers.UnlikeProject)
+	router.GET("/projects/does-like/:username/:project_id", handlers.IsProjectLiked)
 
 	router.GET("/posts/:post_id", handlers.GetPostById)
 	router.POST("/posts", handlers.CreatePost)
@@ -80,6 +80,7 @@ func main() {
 
 	router.POST("/posts/:username/likes/:post_id", handlers.LikePost)
 	router.POST("/posts/:username/unlikes/:post_id", handlers.UnlikePost)
+	router.GET("/posts/does-like/:username/:post_id", handlers.IsPostLiked)
 
 	router.POST("/comments/for-post/:post_id", handlers.CreateCommentOnPost)
 	router.POST("/comments/for-project/:project_id", handlers.CreateCommentOnProject)
@@ -95,9 +96,7 @@ func main() {
 
 	router.POST("/comments/:username/likes/:comment_id", handlers.LikeComment)
 	router.POST("/comments/:username/unlikes/:comment_id", handlers.UnlikeComment)
-
-	log.Println("we are in the func (log.Println)")
-	fmt.Println("we are in the func (fmt.Println)")
+	router.GET("/comments/does-like/:username/:comment_id", handlers.IsCommentLiked)
 
 	var dbinfo, dbtype string
 	if DEBUG {
