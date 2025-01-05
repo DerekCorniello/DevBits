@@ -38,6 +38,33 @@ func GetProjectById(context *gin.Context) {
 	context.JSON(http.StatusOK, project)
 }
 
+// GetProjectsByUserId handles GET requests to retrieve projects information by its owning user's id.
+// It expects the `user_id` parameter in the URL and does not require a request body.
+// Returns:
+// - 400 Bad Request if the ID is invalid.
+// - 404 Not Found if the user id does not exist.
+// - 500 Internal Server Error if the database query fails.
+// On success, responds with a 200 OK status and the projects' details in JSON format.
+func GetProjectsByUserId(context *gin.Context) {
+	strId := context.Param("user_id")
+	id, err := strconv.Atoi(strId)
+	if err != nil {
+		return
+	}
+	project, httpcode, err := database.QueryProjectsByUserId(id)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to fetch projects: %v", err))
+		return
+	}
+
+	if project == nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("User with id '%v' not found", strId))
+		return
+	}
+
+	context.JSON(http.StatusOK, project)
+}
+
 // CreateProject handles POST requests to create a new project.
 // It expects a JSON payload that can be bound to a `types.Project` object.
 // Validates the provided owner's ID and ensures the user exists.
@@ -302,4 +329,55 @@ func UnfollowProject(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v unfollowed %v", username, projectId)})
+}
+
+// LikeProject handles POST requests to like a project.
+// It expects the `username` and `project_id` parameters in the URL.
+// Returns:
+// - Appropriate error code (404 if missing data, 500 if error) for database failures or invalid input.
+// On success, responds with a 200 OK status and a confirmation message.
+func LikeProject(context *gin.Context) {
+	username := context.Param("username")
+	projectId := context.Param("project_id")
+
+	httpcode, err := database.CreateProjectLike(username, projectId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to like project: %v", err))
+		return
+	}
+	context.JSON(httpcode, gin.H{"message": fmt.Sprintf("%v likes %v", username, projectId)})
+}
+
+// UnlikeProject handles POST requests to unlike a project.
+// It expects the `username` and `project_id` parameters in the URL.
+// Returns:
+// - Appropriate error code (404 if missing data, 500 if error) for database failures or invalid input.
+// On success, responds with a 200 OK status and a confirmation message.
+func UnlikeProject(context *gin.Context) {
+	username := context.Param("username")
+	projectId := context.Param("project_id")
+
+	httpcode, err := database.RemoveProjectLike(username, projectId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to unlike project: %v", err))
+		return
+	}
+	context.JSON(httpcode, gin.H{"message": fmt.Sprintf("%v unliked %v", username, projectId)})
+}
+
+// IsProjectLiked handles GET requests to query for a project like.
+// It expects the `username` and `project_id` parameters in the URL.
+// Returns:
+// - Appropriate error code for database failures or invalid input.
+// On success, responds with a 200 OK status and a status message.
+func IsProjectLiked(context *gin.Context) {
+	username := context.Param("username")
+	projectId := context.Param("project_id")
+
+	httpcode, exists, err := database.QueryProjectLike(username, projectId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to query for project like: %v", err))
+		return
+	}
+	context.JSON(httpcode, gin.H{"status": exists})
 }

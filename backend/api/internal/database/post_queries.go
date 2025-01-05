@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"backend/api/internal/types"
@@ -129,7 +130,7 @@ func QueryUpdatePost(id int, updatedData map[string]interface{}) error {
 //   - id: The unique identifier of the user to query.
 //
 // Returns:
-//   - *types.Post: The post details if found.
+//   - []types.Post: The post details if found.
 //   - error: An error if the query fails. Returns nil for both if no post exists.
 func QueryPostsByUserId(userId int) ([]types.Post, int, error) {
 	query := `SELECT id, user_id, project_id, content, likes, creation_date FROM Posts WHERE user_id = ?;`
@@ -140,7 +141,7 @@ func QueryPostsByUserId(userId int) ([]types.Post, int, error) {
 	}
 	defer rows.Close()
 
-	var posts []types.Post = []types.Post{}
+	var posts []types.Post
 
 	for rows.Next() {
 		var post types.Post
@@ -159,7 +160,7 @@ func QueryPostsByUserId(userId int) ([]types.Post, int, error) {
 			}
 			return nil, http.StatusInternalServerError, err
 		}
-        posts = append(posts, post)
+		posts = append(posts, post)
 	}
 
 	return posts, http.StatusOK, nil
@@ -201,7 +202,169 @@ func QueryPostsByProjectId(projId int) ([]types.Post, int, error) {
 			}
 			return nil, http.StatusInternalServerError, err
 		}
-        posts = append(posts, post)
+		posts = append(posts, post)
 	}
 	return posts, http.StatusOK, nil
+}
+
+// CreatePostLike creates a like relationship between a user and a post.
+//
+// Parameters:
+//   - username: The username of the user creating the like.
+//   - strPostID: The ID of the project to like (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or the user is not liking the post.
+func CreatePostLike(username string, strPostId string) (int, error) {
+	// get user ID from username, implicitly checks if user exists
+	user_id, err := GetUserIdByUsername(username)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred getting id for username: %v", err)
+	}
+
+	// parse post ID
+	postId, err := strconv.Atoi(strPostId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred parsing post_id id: %v", err)
+	}
+
+	// verify post exists
+    post, err := QueryPost(postId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred verifying the post exists: %v", err)
+	} else if post == nil {
+		return http.StatusNotFound, fmt.Errorf("Post ID %d does not exist", postId)
+	}
+
+	// check if the like already exists
+	var exists bool
+	query := `SELECT EXISTS (
+                 SELECT 1 FROM PostLikes WHERE user_id = ? AND post_id = ?
+              )`
+	err = DB.QueryRow(query, user_id, postId).Scan(&exists)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred checking like existence: %v", err)
+	}
+	if exists {
+		// like already exists, but we return success to keep it idempotent
+		return http.StatusOK, nil
+	}
+
+	// insert the like
+	insertQuery := `INSERT INTO PostLikes (user_id, post_id) VALUES (?, ?)`
+	_, err = DB.Exec(insertQuery, user_id, postId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to insert post like: %v", err)
+	}
+
+	// update the likes column
+	updateQuery := `UPDATE Posts SET likes = likes + 1 WHERE id = ?`
+	_, err = DB.Exec(updateQuery, postId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
+	}
+
+	return http.StatusCreated, nil
+}
+
+// RemovePostLike deletes a like relationship between a user and a post.
+//
+// Parameters:
+//   - username: The username of the user removing the like.
+//   - strPostID: The ID of the post to unlike (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or the user is not liking the post.
+func RemovePostLike(username string, strPostId string) (int, error) {
+	// get user ID
+	user_id, err := GetUserIdByUsername(username)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred getting id for username: %v", err)
+	}
+
+	// parse post ID
+	postId, err := strconv.Atoi(strPostId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred parsing username id: %v", err)
+	}
+
+	// verify post exists
+	_, err = QueryPost(postId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred verifying the post exists: %v", err)
+	}
+
+	// perform the delete operation
+	deleteQuery := `DELETE FROM PostLikes WHERE user_id = ? AND post_id = ?`
+	result, err := DB.Exec(deleteQuery, user_id, postId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to delete post like: %v", err)
+	}
+
+	// check if any rows were actually deleted
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to check rows affected: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		// if no rows were deleted, return success to keep idempotency
+		return http.StatusNoContent, nil
+	}
+
+	// update the likes column
+	updateQuery := `UPDATE Posts SET likes = likes - 1 WHERE id = ?`
+	_, err = DB.Exec(updateQuery, postId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
+	}
+
+	return http.StatusOK, nil
+}
+
+// QueryPostLike queries for a like relationship between a user and a post.
+//
+// Parameters:
+//   - username: The username of the user removing the like.
+//   - postID: The ID of the post to unlike (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or.
+func QueryPostLike(username string, strPostId string) (int, bool, error) {
+	// get user ID from username, implicitly checks if user exists
+	user_id, err := GetUserIdByUsername(username)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred getting id for username: %v", err)
+	}
+
+	// parse post ID
+	postId, err := strconv.Atoi(strPostId)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred parsing post_id: %v", err)
+	}
+
+	// verify post exists
+	_, err = QueryPost(postId)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred verifying the post exists: %v", err)
+	}
+
+	// check if the like already exists
+	var exists bool
+	query := `SELECT EXISTS (
+                 SELECT 1 FROM PostLikes WHERE user_id = ? AND post_id = ?
+              )`
+	err = DB.QueryRow(query, user_id, postId).Scan(&exists)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred checking like existence: %v", err)
+	}
+	if exists {
+		return http.StatusOK, true, nil
+	} else {
+		return http.StatusOK, false, nil
+	}
+
 }

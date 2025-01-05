@@ -53,6 +53,55 @@ func QueryProject(id int) (*types.Project, error) {
 	return &project, nil
 }
 
+// QueryProjectsByUserId retrieves a user's projects by a user ID from the database.
+//
+// Parameters:
+//   - id: The unique identifier of the user to query projects on.
+//
+// Returns:
+//   - *[]types.Project: A list of the projects' details if found.
+//   - error: An error if the query fails. Returns nil for both if no project exists.
+func QueryProjectsByUserId(userId int) ([]types.Project, int, error) {
+	query := `SELECT id, name, description, status, likes, links, tags, owner, creation_date FROM Projects WHERE owner = ?;`
+	rows, err := DB.Query(query, userId)
+	if err != nil {
+		return nil, http.StatusNotFound, err
+	}
+	var projects []types.Project
+	defer rows.Close()
+
+	for rows.Next() {
+		var project types.Project
+		var linksJSON, tagsJSON string
+		err := rows.Scan(
+			&project.ID,
+			&project.Name,
+			&project.Description,
+			&project.Status,
+			&project.Likes,
+			&linksJSON,
+			&tagsJSON,
+			&project.Owner,
+			&project.CreationDate,
+		)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return nil, http.StatusOK, nil
+			}
+			return nil, http.StatusInternalServerError, err
+		}
+
+		if err := UnmarshalFromJSON(linksJSON, &project.Links); err != nil {
+			return nil, http.StatusBadRequest, err
+		}
+		if err := UnmarshalFromJSON(tagsJSON, &project.Tags); err != nil {
+			return nil, http.StatusBadRequest, err
+		}
+	}
+
+	return projects, http.StatusOK, nil
+}
+
 // QueryCreateProject creates a new project in the database.
 //
 // Parameters:
@@ -379,4 +428,164 @@ func RemoveProjectFollow(username string, projectID string) (int, error) {
 	}
 
 	return http.StatusOK, nil
+}
+
+// CreateProjectLike creates a like relationship between a user and a project.
+//
+// Parameters:
+//   - username: The username of the user creating the like.
+//   - projectID: The ID of the project to like (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or the user is not liking the project.
+func CreateProjectLike(username string, strProjId string) (int, error) {
+	// get user ID from username, implicitly checks if user exists
+	user_id, err := GetUserIdByUsername(username)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred getting id for username: %v", err)
+	}
+
+	// parse project ID
+	projId, err := strconv.Atoi(strProjId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred parsing proj_id: %v", err)
+	}
+
+	// verify project exists
+	_, err = QueryProject(projId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred verifying the project exists: %v", err)
+	}
+
+	// check if the like already exists
+	var exists bool
+	query := `SELECT EXISTS (
+                 SELECT 1 FROM ProjectLikes WHERE user_id = ? AND project_id = ?
+              )`
+	err = DB.QueryRow(query, user_id, projId).Scan(&exists)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred checking like existence: %v", err)
+	}
+	if exists {
+		// like already exists, but we return success to keep it idempotent
+		return http.StatusOK, nil
+	}
+
+	// insert the like
+	insertQuery := `INSERT INTO ProjectLikes (user_id, project_id) VALUES (?, ?)`
+	_, err = DB.Exec(insertQuery, user_id, projId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to insert project like: %v", err)
+	}
+
+	// update the likes column
+	updateQuery := `UPDATE Projects SET likes = likes + 1 WHERE id = ?`
+	_, err = DB.Exec(updateQuery, projId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
+	}
+
+	return http.StatusCreated, nil
+}
+
+// RemoveProjectLike deletes a like relationship between a user and a project.
+//
+// Parameters:
+//   - username: The username of the user removing the like.
+//   - projectID: The ID of the project to unlike (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or the user is not liking the project.
+func RemoveProjectLike(username string, strProjId string) (int, error) {
+	// get user ID
+	user_id, err := GetUserIdByUsername(username)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred getting id for username: %v", err)
+	}
+
+	// parse project ID
+	projId, err := strconv.Atoi(strProjId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred parsing username id: %v", err)
+	}
+
+	// verify project exists
+	_, err = QueryProject(projId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("An error occurred verifying the project exists: %v", err)
+	}
+
+	// perform the delete operation
+	deleteQuery := `DELETE FROM ProjectLikes WHERE user_id = ? AND project_id = ?`
+	result, err := DB.Exec(deleteQuery, user_id, projId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to delete project like: %v", err)
+	}
+
+	// check if any rows were actually deleted
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to check rows affected: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		// if no rows were deleted, return success to keep idempotency
+		return http.StatusNoContent, nil
+	}
+
+	// update the likes column
+	updateQuery := `UPDATE Projects SET likes = likes - 1 WHERE id = ?`
+	_, err = DB.Exec(updateQuery, projId)
+	if err != nil {
+		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
+	}
+
+	return http.StatusOK, nil
+}
+
+// QueryProjectLike queries for a like relationship between a user and a project.
+//
+// Parameters:
+//   - username: The username of the user removing the like.
+//   - projectID: The ID of the project to unlike (as a string, converted internally).
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - error: An error if the operation fails or.
+func QueryProjectLike(username string, strProjId string) (int, bool, error) {
+	// get user ID from username, implicitly checks if user exists
+	user_id, err := GetUserIdByUsername(username)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred getting id for username: %v", err)
+	}
+
+	// parse project ID
+	projId, err := strconv.Atoi(strProjId)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred parsing proj_id: %v", err)
+	}
+
+	// verify project exists
+	_, err = QueryProject(projId)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred verifying the project exists: %v", err)
+	}
+
+	// check if the like already exists
+	var exists bool
+	query := `SELECT EXISTS (
+                 SELECT 1 FROM ProjectLikes WHERE user_id = ? AND project_id = ?
+              )`
+	err = DB.QueryRow(query, user_id, projId).Scan(&exists)
+	if err != nil {
+		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred checking like existence: %v", err)
+	}
+	if exists {
+		return http.StatusOK, true, nil
+	} else {
+		return http.StatusOK, false, nil
+	}
+
 }

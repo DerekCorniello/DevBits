@@ -12,7 +12,7 @@ function Like() {
   const toggleLike = () => {
     Animated.sequence([
       Animated.timing(scaleValue, {
-        toValue: 1.1,
+        toValue: 1.2,
         duration: 100,
         useNativeDriver: true,
       }),
@@ -34,17 +34,17 @@ function Like() {
         ]}
         checkedIcon={
           <Icon
-            name="heart-fill"
-            type="octicon"
-            color="red"
+            name="lightbulb"
+            type="material"
+            color="#16ff00"
             size={20}
             iconStyle={styles.iconStyle}
           />
         }
         uncheckedIcon={
           <Icon
-            name="heart"
-            type="octicon"
+            name="lightbulb-outline"
+            type="material"
             color="grey"
             size={20}
             iconStyle={styles.iconStyle}
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     marginRight: 0,
   },
   glowEffect: {
-    shadowColor: "red",
+    shadowColor: "white",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 10,
