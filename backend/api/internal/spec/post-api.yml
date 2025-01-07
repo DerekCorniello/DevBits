@@ -1,0 +1,263 @@
+openapi: 3.0.0
+info:
+  title: Posts API
+  version: 1.0.0
+  description: API for managing posts within projects
+paths:
+  /posts/{post_id}:
+    get:
+      summary: Get post by ID
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Post details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Invalid post ID
+        '404':
+          description: Post not found
+        '500':
+          description: Server error
+    
+    delete:
+      summary: Delete a post
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Post deleted successfully
+        '400':
+          description: Invalid post ID
+        '404':
+          description: Post not found
+        '500':
+          description: Server error
+    
+    patch:
+      summary: Update post information
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: integer
+                  format: int64
+                project:
+                  type: integer
+                  format: int64
+                content:
+                  type: string
+      responses:
+        '200':
+          description: Post updated successfully
+        '400':
+          description: Invalid request
+        '404':
+          description: Post not found
+        '500':
+          description: Server error
+
+  /posts/user/{user_id}:
+    get:
+      summary: Get posts by user ID
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '400':
+          description: Invalid user ID
+        '404':
+          description: No posts found
+        '500':
+          description: Server error
+
+  /posts/project/{project_id}:
+    get:
+      summary: Get posts by project ID
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '400':
+          description: Invalid project ID
+        '404':
+          description: No posts found
+        '500':
+          description: Server error
+
+  /posts/create:
+    post:
+      summary: Create a new post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Post'
+      responses:
+        '201':
+          description: Post created successfully
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+
+  /posts/{post_id}/like/{username}:
+    post:
+      summary: Like a post
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post liked successfully
+        '404':
+          description: Post or user not found
+        '500':
+          description: Server error
+
+  /posts/{post_id}/unlike/{username}:
+    post:
+      summary: Unlike a post
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post unliked successfully
+        '404':
+          description: Post or user not found
+        '500':
+          description: Server error
+
+  /posts/{post_id}/liked/{username}:
+    get:
+      summary: Check if user liked a post
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Like status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+        '404':
+          description: Post or user not found
+        '500':
+          description: Server error
+
+components:
+  schemas:
+    Post:
+      type: object
+      required:
+        - id
+        - user
+        - project
+        - content
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the post
+        user:
+          type: integer
+          format: int64
+          description: User ID of the post author
+        project:
+          type: integer
+          format: int64
+          description: Project ID the post belongs to
+        likes:
+          type: integer
+          format: int64
+          description: Number of likes on the post
+        content:
+          type: string
+          description: Content of the post
+        created_on:
+          type: string
+          format: date-time
+          description: Creation timestamp
+    
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error type or code
+        message:
+          type: string
+          description: Detailed error message

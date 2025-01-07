@@ -4,40 +4,9 @@ info:
   description: API for managing user records, including fetching, creating, updating, and deleting users.
   version: 1.0.0
 paths:
-  /users:
-    post:
-      summary: Create a new user
-      description: Creates a new user record.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-      responses:
-        201:
-          description: User created successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        400:
-          description: Invalid request payload
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
   /users/{username}:
     get:
-      summary: Get a user by username
-      description: Retrieve user details by their username.
+      summary: Get user by username
       parameters:
         - name: username
           in: path
@@ -45,34 +14,14 @@ paths:
           schema:
             type: string
       responses:
-        200:
-          description: User found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        400:
-          description: Invalid username format or missing parameter
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
+        '200':
+          description: User retrieved successfully
+        '404':
           description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
     delete:
-      summary: Delete a user by username
-      description: Deletes a user by their username.
+      summary: Delete user
       parameters:
         - name: username
           in: path
@@ -80,37 +29,14 @@ paths:
           schema:
             type: string
       responses:
-        200:
+        '200':
           description: User deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        400:
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
+        '404':
           description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-    patch:
+    put:
       summary: Update user information
-      description: Updates specific fields of a user by their username.
       parameters:
         - name: username
           in: path
@@ -123,178 +49,104 @@ paths:
           application/json:
             schema:
               type: object
-              description: Fields to update with their new values.
       responses:
-        200:
+        '200':
           description: User updated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  user:
-                    type: object
-        400:
-          description: Bad request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
+        '400':
+          description: Invalid input or disallowed fields
+        '404':
           description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+
+  /users:
+    post:
+      summary: Create new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: User created successfully
+        '400':
+          description: Invalid input
+        '500':
+          description: Internal server error
 
   /users/{username}/followers:
     get:
-      summary: Gets followers of a username by their username
-      description: Returns a list of user ids of the users that follow the given user
-      parameters: 
+      summary: Get user's followers
+      parameters:
         - name: username
           in: path
           required: true
           schema:
             type: string
       responses:
-        200:
-          description: Successfully retrieved the followers list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  format: string
-        400:
-          description: Invalid username format or missing parameter
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
+        '200':
+          description: Followers retrieved successfully
+        '404':
           description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
-  /users/{username}/follows:
+  /users/{username}/following:
     get:
-      summary: Retrieves a user's list of following
-      description: Returns a list of user ids of the users that a given user follows.
-      parameters: 
+      summary: Get users followed by user
+      parameters:
         - name: username
           in: path
           required: true
           schema:
-            type: array
-            items:
-              type: string
+            type: string
       responses:
-        200:
-          description: Successfully retrieved the following list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-        400:
-          description: Invalid username format or missing parameter
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
+        '200':
+          description: Following users retrieved successfully
+        '404':
           description: User not found
+        '500':
+          description: Internal server error
 
   /users/{username}/followers/usernames:
     get:
-      summary: Gets followers of a username by their username
-      description: Returns a list of usernames of the users that follow the given user
-      parameters: 
+      summary: Get usernames of user's followers
+      parameters:
         - name: username
           in: path
           required: true
           schema:
             type: string
       responses:
-        200:
-          description: Successfully retrieved the followers list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  format: string
-        400:
-          description: Invalid username format or missing parameter
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
+        '200':
+          description: Follower usernames retrieved successfully
+        '404':
           description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
-  /users/{username}/follows:
+  /users/{username}/following/usernames:
     get:
-      summary: Retrieves a user's list of following
-      description: Returns a list of usernames of the users that a given user follows.
-      parameters: 
+      summary: Get usernames of users followed by user
+      parameters:
         - name: username
           in: path
           required: true
           schema:
-            type: array
-            items:
-              type: string
+            type: string
       responses:
-        200:
-          description: Successfully retrieved the following list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: string
-        400:
-          description: Invalid username format or missing parameter
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
+        '200':
+          description: Following usernames retrieved successfully
+        '404':
           description: User not found
+        '500':
+          description: Internal server error
 
   /users/{username}/follow/{new_follow}:
-    get:
-      summary: Allows user to follow another user
-      description: Creates a new following from a user to another user based on two usernames
+    post:
+      summary: Follow a user
       parameters:
         - name: username
           in: path
@@ -306,40 +158,17 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
-        200:
-          description: Successfully followed user
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        400:
-          description: Invalid username
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '200':
+          description: User followed successfully
+        '400':
+          description: Invalid operation or already following
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
   /users/{username}/unfollow/{unfollow}:
-    get:
-      summary: Allows user to unfollow another user
-      description: Deletes a current following from a user to another user based on two usernames
+    delete:
+      summary: Unfollow a user
       parameters:
         - name: username
           in: path
@@ -351,36 +180,13 @@ paths:
           required: true
           schema:
             type: string
-
       responses:
-        200:
-          description: Successfully unfollowed user
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        400:
-          description: Invalid username
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
-          description: Project not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '200':
+          description: User unfollowed successfully
+        '400':
+          description: Invalid operation or not following
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
 
 components:
   schemas:
