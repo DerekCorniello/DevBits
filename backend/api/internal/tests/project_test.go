@@ -27,7 +27,7 @@ var project_tests []TestCase = []TestCase{
 		Endpoint:       "/projects",
 		Input:          `{"name":"New Project","description":"Test project description","owner":1}`,
 		ExpectedStatus: http.StatusCreated,
-		ExpectedBody:   `{"message":"Project created successfully with id '4'"}`,
+		ExpectedBody:   `{"message":"Project created successfully with id '5'"}`,
 	},
 	{
 		Method:         http.MethodPost,
