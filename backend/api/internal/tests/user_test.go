@@ -142,10 +142,17 @@ var user_tests []TestCase = []TestCase{
 	},
 	{
 		Method:         http.MethodPost,
-		Endpoint:       "/users/tech_writer2/follow/dev_user1",
+		Endpoint:       "/users/tech_writer2/follow/dev",
 		Input:          ``,
-		ExpectedStatus: http.StatusOK,
-        ExpectedBody:   `{"message":"tech_writer2 now follows dev_user1"}`,
+		ExpectedStatus: http.StatusNotFound,
+        ExpectedBody:   `{"error":"Not Found","message":"Failed to add follower: Cannot find user with username 'dev'"}`,
+	},
+	{
+		Method:         http.MethodPost,
+		Endpoint:       "/users/tech/follow/dev_user1",
+		Input:          ``,
+		ExpectedStatus: http.StatusNotFound,
+        ExpectedBody:   `{"error":"Not Found","message":"Failed to add follower: Cannot find user with username 'tech'"}`,
 	},
 	{
 		Method:         http.MethodGet,
@@ -159,7 +166,7 @@ var user_tests []TestCase = []TestCase{
 		Endpoint:       "/users/dev_user1/followers",
 		Input:          ``,
 		ExpectedStatus: http.StatusOK,
-		ExpectedBody:   `[4,2]`,
+		ExpectedBody:   `[4]`,
 	},
 	{
 		Method:         http.MethodPost,
@@ -170,10 +177,24 @@ var user_tests []TestCase = []TestCase{
 	},	
     {
 		Method:         http.MethodPost,
-		Endpoint:       "/users/tech_writer2/unfollow/dev_user1",
+		Endpoint:       "/users/backend_guru4/unfollow/dev_user1",
 		Input:          ``,
 		ExpectedStatus: http.StatusOK,
-        ExpectedBody:   `{"message":"tech_writer2 unfollowed dev_user1"}`,
+        ExpectedBody:   `{"message":"backend_guru4 unfollowed dev_user1"}`,
+	},
+    {
+		Method:         http.MethodPost,
+		Endpoint:       "/users/tech_writer2/unfollow/dev",
+		Input:          ``,
+		ExpectedStatus: http.StatusNotFound,
+        ExpectedBody:   `{"error":"Not Found","message":"Failed to remove follower: Cannot find user with username 'dev'"}`,
+	},
+	{
+		Method:         http.MethodPost,
+		Endpoint:       "/users/tech/unfollow/dev_user1",
+		Input:          ``,
+		ExpectedStatus: http.StatusNotFound,
+        ExpectedBody:   `{"error":"Not Found","message":"Failed to remove follower: Cannot find user with username 'tech'"}`,
 	},
 	{
 		Method:         http.MethodGet,
@@ -187,6 +208,6 @@ var user_tests []TestCase = []TestCase{
 		Endpoint:       "/users/dev_user1/followers",
 		Input:          ``,
 		ExpectedStatus: http.StatusOK,
-		ExpectedBody:   `[4]`,
+		ExpectedBody:   `null`,
 	},
 }

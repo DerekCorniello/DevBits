@@ -358,12 +358,12 @@ func getUsersFollowingOrFollowersUsernames(query string, userID int) ([]string, 
 func CreateNewUserFollow(user string, newFollow string) (int, error) {
 	userID, err := GetUserIdByUsername(user)
 	if err != nil {
-		return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'.", user)
+		return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'", user)
 	}
 
 	newFollowID, err := GetUserIdByUsername(newFollow)
 	if err != nil {
-		return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'.", newFollow)
+		return http.StatusNotFound, fmt.Errorf("Cannot find user with username '%v'", newFollow)
 	}
 
 	currFollowers, httpCode, err := QueryGetUsersFollowing(user)

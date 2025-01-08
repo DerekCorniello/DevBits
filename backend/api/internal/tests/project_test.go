@@ -92,4 +92,11 @@ var project_tests []TestCase = []TestCase{
 		ExpectedStatus: http.StatusNotFound,
 		ExpectedBody:   `{"error":"Not Found","message":"Failed to delete project: Deletion did not affect any records"}`,
 	},
+	{
+		Method:         http.MethodDelete,
+		Endpoint:       "/projects/9999",
+		Input:          "",
+		ExpectedStatus: http.StatusNotFound,
+		ExpectedBody:   `{"error":"Not Found","message":"Failed to delete project: Deletion did not affect any records"}`,
+	},
 }
