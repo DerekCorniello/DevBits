@@ -5,7 +5,7 @@ import (
 )
 
 var post_tests []TestCase = []TestCase{
-	// Test GET post by ID
+
 	{
 		Method:         http.MethodGet,
 		Endpoint:       "/posts/1",
@@ -21,7 +21,6 @@ var post_tests []TestCase = []TestCase{
 		ExpectedBody:   `{"error":"Not Found","message":"Post with id '-1' not found"}`,
 	},
 
-	// Test POST to create new post
 	{
 		Method:         http.MethodPost,
 		Endpoint:       "/posts",
@@ -44,7 +43,6 @@ var post_tests []TestCase = []TestCase{
 		ExpectedBody:   `{"error":"Bad Request","message":"Failed to verify post ownership. User could not be found"}`,
 	},
 
-	// Test PUT to update post
 	{
 		Method:         http.MethodPut,
 		Endpoint:       "/posts/1",
@@ -60,7 +58,6 @@ var post_tests []TestCase = []TestCase{
 		ExpectedBody:   `{"error":"Not Found","message":"Post with id '9999' not found"}`,
 	},
 
-	// Test GET posts by user
 	{
 		Method:         http.MethodGet,
 		Endpoint:       "/posts/by-user/1",
@@ -69,7 +66,6 @@ var post_tests []TestCase = []TestCase{
 		ExpectedBody:   `[{"id":1,"user":1,"project":1,"likes":40,"content":"Updated: First version of OpenAPI Toolkit released!","created_on":"2024-09-13T00:00:00Z"}]`,
 	},
 
-	// Test GET posts by project
 	{
 		Method:         http.MethodGet,
 		Endpoint:       "/posts/by-project/2",
@@ -78,7 +74,6 @@ var post_tests []TestCase = []TestCase{
 		ExpectedBody:   `[{"id":2,"user":2,"project":2,"likes":25,"content":"We've archived DocuHelper, but feel free to explore the code.","created_on":"2024-06-13T00:00:00Z"}]`,
 	},
 
-	// Test DELETE post
 	{
 		Method:         http.MethodDelete,
 		Endpoint:       "/posts/4",
@@ -94,7 +89,6 @@ var post_tests []TestCase = []TestCase{
 		ExpectedBody:   `{"error":"Not Found","message":"Failed to delete post: Deletion did not affect any records"}`,
 	},
 
-	// Test post likes
 	{
 		Method:         http.MethodPost,
 		Endpoint:       "/posts/tech_writer2/likes/1",
@@ -110,12 +104,12 @@ var post_tests []TestCase = []TestCase{
 		ExpectedBody:   `{"message":"tech_writer2 unliked post 1"}`,
 	},
 
-	// Test check if post is liked
 	{
 		Method:         http.MethodGet,
 		Endpoint:       "/posts/does-like/tech_writer2/1",
 		Input:          "",
 		ExpectedStatus: http.StatusOK,
-        ExpectedBody:   `{"status":false}`,
+		ExpectedBody:   `{"status":false}`,
 	},
 }
+
