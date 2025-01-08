@@ -33,7 +33,7 @@ type Project struct {
 }
 
 type Post struct {
-	ID           int64     `json:"id" binding:"required"`
+	ID           int64     `json:"id"`
 	User         int64     `json:"user" binding:"required"`
 	Project      int64     `json:"project" binding:"required"`
 	Likes        int64     `json:"likes"`

@@ -52,8 +52,8 @@ func QueryPost(id int) (*types.Post, error) {
 func QueryCreatePost(post *types.Post) (int64, error) {
 	currentTime := time.Now().Format("2006-01-02 15:04:05")
 
-	query := `INSERT INTO Posts (id, user_id, project_id, content, likes, creation_date) 
-              VALUES (?, ?, ?, ?, ?, ?);`
+	query := `INSERT INTO Posts (user_id, project_id, content, likes, creation_date) 
+              VALUES (?, ?, ?, ?, ?);`
 
 	res, err := DB.Exec(query, post.ID, post.User, post.Project, post.Content, post.Likes, currentTime)
 	if err != nil {
