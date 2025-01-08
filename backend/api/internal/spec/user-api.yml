@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: User Management API
+  title: User API
   description: API for managing user records, including fetching, creating, updating, and deleting users.
   version: 1.0.0
 paths:
@@ -93,7 +93,7 @@ paths:
         '500':
           description: Internal server error
 
-  /users/{username}/following:
+  /users/{username}/follows:
     get:
       summary: Get users followed by user
       parameters:
@@ -127,7 +127,7 @@ paths:
         '500':
           description: Internal server error
 
-  /users/{username}/following/usernames:
+  /users/{username}/follows/usernames:
     get:
       summary: Get usernames of users followed by user
       parameters:
@@ -167,7 +167,7 @@ paths:
           description: Internal server error
 
   /users/{username}/unfollow/{unfollow}:
-    delete:
+    post:
       summary: Unfollow a user
       parameters:
         - name: username
@@ -190,8 +190,7 @@ paths:
 
 components:
   schemas:
-    User: # this references the User type in internal/types/types.gp
-          # however, should be sent as a JSON, obv
+    User:
       type: object
       properties:
         username:
