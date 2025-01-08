@@ -311,7 +311,7 @@ func FollowProject(context *gin.Context) {
 		RespondWithError(context, httpcode, fmt.Sprintf("Failed to add follower: %v", err))
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v now follows %v", username, projectId)})
+	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v now follows project %v", username, projectId)})
 }
 
 // UnfollowProject handles DELETE requests to unfollow a project.
@@ -328,7 +328,7 @@ func UnfollowProject(context *gin.Context) {
 		RespondWithError(context, httpcode, fmt.Sprintf("Failed to remove follower: %v", err))
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v unfollowed %v", username, projectId)})
+	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v unfollowed project %v", username, projectId)})
 }
 
 // LikeProject handles POST requests to like a project.
@@ -345,7 +345,7 @@ func LikeProject(context *gin.Context) {
 		RespondWithError(context, httpcode, fmt.Sprintf("Failed to like project: %v", err))
 		return
 	}
-	context.JSON(httpcode, gin.H{"message": fmt.Sprintf("%v likes %v", username, projectId)})
+	context.JSON(httpcode, gin.H{"message": fmt.Sprintf("%v likes project %v", username, projectId)})
 }
 
 // UnlikeProject handles POST requests to unlike a project.
@@ -362,7 +362,7 @@ func UnlikeProject(context *gin.Context) {
 		RespondWithError(context, httpcode, fmt.Sprintf("Failed to unlike project: %v", err))
 		return
 	}
-	context.JSON(httpcode, gin.H{"message": fmt.Sprintf("%v unliked %v", username, projectId)})
+	context.JSON(httpcode, gin.H{"message": fmt.Sprintf("%v unliked project %v", username, projectId)})
 }
 
 // IsProjectLiked handles GET requests to query for a project like.

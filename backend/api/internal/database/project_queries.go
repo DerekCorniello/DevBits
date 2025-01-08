@@ -371,6 +371,15 @@ func CreateNewProjectFollow(username string, projectID string) (int, error) {
 		return httpCode, fmt.Errorf("Cannot retrieve user's following list: %v", err)
 	}
 
+    existingProj, err := QueryProject(intProjectID)
+    if err != nil {
+        return http.StatusInternalServerError, fmt.Errorf("Error querying for existing project: %v", err)
+    }
+
+    if existingProj == nil {
+        return http.StatusNotFound, fmt.Errorf("Project with id %v does not exist", intProjectID)
+    }
+
 	if slices.Contains(currFollowing, intProjectID) {
 		return http.StatusConflict, fmt.Errorf("User is already following this project")
 	}
@@ -407,6 +416,15 @@ func RemoveProjectFollow(username string, projectID string) (int, error) {
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("An error occurred parsing project id: %v", projectID)
 	}
+
+    existingProj, err := QueryProject(intProjectID)
+    if err != nil {
+        return http.StatusInternalServerError, fmt.Errorf("Error querying for existing project: %v", err)
+    }
+
+    if existingProj == nil {
+        return http.StatusNotFound, fmt.Errorf("Project with id %v does not exist", intProjectID)
+    }
 
 	currFollowing, httpCode, err := QueryGetProjectFollowers(userID)
 	if err != nil {
@@ -453,10 +471,14 @@ func CreateProjectLike(username string, strProjId string) (int, error) {
 	}
 
 	// verify project exists
-	_, err = QueryProject(projId)
-	if err != nil {
-		return http.StatusInternalServerError, fmt.Errorf("An error occurred verifying the project exists: %v", err)
-	}
+    existingProj, err := QueryProject(projId)
+    if err != nil {
+        return http.StatusInternalServerError, fmt.Errorf("Error querying for existing project: %v", err)
+    }
+
+    if existingProj == nil {
+        return http.StatusNotFound, fmt.Errorf("Project with id %v does not exist", projId)
+    }
 
 	// check if the like already exists
 	var exists bool
@@ -512,10 +534,14 @@ func RemoveProjectLike(username string, strProjId string) (int, error) {
 	}
 
 	// verify project exists
-	_, err = QueryProject(projId)
-	if err != nil {
-		return http.StatusInternalServerError, fmt.Errorf("An error occurred verifying the project exists: %v", err)
-	}
+    existingProj, err := QueryProject(projId)
+    if err != nil {
+        return http.StatusInternalServerError, fmt.Errorf("Error querying for existing project: %v", err)
+    }
+
+    if existingProj == nil {
+        return http.StatusNotFound, fmt.Errorf("Project with id %v does not exist", projId)
+    }
 
 	// perform the delete operation
 	deleteQuery := `DELETE FROM ProjectLikes WHERE user_id = ? AND project_id = ?`
@@ -568,10 +594,14 @@ func QueryProjectLike(username string, strProjId string) (int, bool, error) {
 	}
 
 	// verify project exists
-	_, err = QueryProject(projId)
+    existingProj, err := QueryProject(projId)
+
 	if err != nil {
 		return http.StatusInternalServerError, false, fmt.Errorf("An error occurred verifying the project exists: %v", err)
 	}
+    if existingProj == nil {
+        return http.StatusNotFound, false, fmt.Errorf("Project with id %v does not exist", projId)
+    }
 
 	// check if the like already exists
 	var exists bool

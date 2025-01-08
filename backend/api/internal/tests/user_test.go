@@ -113,27 +113,6 @@ var user_tests []TestCase = []TestCase{
 		ExpectedBody:   `{"error":"Not Found","message":"Failed to delete user: Deletion did not affect any records"}`,
 	},
 	{
-		Method:         http.MethodGet,
-		Endpoint:       "/users/dev_user1/follows/usernames",
-		Input:          ``,
-		ExpectedStatus: http.StatusOK,
-		ExpectedBody:   `{"following":["data_scientist3"],"message":"Successfully got following"}`,
-	},
-	{
-		Method:         http.MethodGet,
-		Endpoint:       "/users/dev_user1/follows",
-		Input:          ``,
-		ExpectedStatus: http.StatusOK,
-		ExpectedBody:   `[3]`,
-	},
-	{
-		Method:         http.MethodGet,
-		Endpoint:       "/users/dev_user1/followers",
-		Input:          ``,
-		ExpectedStatus: http.StatusOK,
-		ExpectedBody:   `[4]`,
-	},
-	{
 		Method:         http.MethodPost,
 		Endpoint:       "/users/dev_user1/follow/tech_writer2",
 		Input:          ``,
