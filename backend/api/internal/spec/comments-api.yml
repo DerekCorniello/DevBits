@@ -300,7 +300,7 @@ components:
         created_on:
           type: string
           format: date-time
-          description: Creation timestamp
+          description: Creation timestamps (becomes 1/1/2000 upon deletion)
         content:
           type: string
           description: Content of the comment

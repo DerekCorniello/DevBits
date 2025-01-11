@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Project Management API
+  title: Project API
   description: API for managing project records, including fetching, creating, updating, and deleting projects.
   version: 1.0.0
 paths:
@@ -39,7 +39,7 @@ paths:
           description: Project not found
         '500':
           description: Internal server error
-    patch:
+    put:
       summary: Update project information
       parameters:
         - name: project_id
@@ -63,7 +63,7 @@ paths:
         '500':
           description: Internal server error
 
-  /projects/user/{user_id}:
+  /projects/by-user/{user_id}:
     get:
       summary: Get projects by user ID
       parameters:
@@ -133,7 +133,7 @@ paths:
         '500':
           description: Internal server error
 
-  /projects/following/{username}:
+  /projects/follows/{username}:
     get:
       summary: Get projects followed by user
       parameters:
@@ -150,7 +150,7 @@ paths:
         '500':
           description: Internal server error
 
-  /projects/following/names/{username}:
+  /projects/follows/{username}/names:
     get:
       summary: Get names of projects followed by user
       parameters:
@@ -167,7 +167,7 @@ paths:
         '500':
           description: Internal server error
 
-  /projects/{project_id}/follow/{username}:
+  /projects/{username}/follow/{project_id}:
     post:
       summary: Follow a project
       parameters:
@@ -188,7 +188,9 @@ paths:
           description: Project or user not found
         '500':
           description: Internal server error
-    delete:
+
+  /projects/{username}/unfollow/{project_id}:
+    post:
       summary: Unfollow a project
       parameters:
         - name: project_id
@@ -209,7 +211,7 @@ paths:
         '500':
           description: Internal server error
 
-  /projects/{project_id}/like/{username}:
+  /projects/{username}/likes/{project_id}:
     post:
       summary: Like a project
       parameters:
@@ -231,7 +233,7 @@ paths:
         '500':
           description: Internal server error
 
-  /projects/{project_id}/unlike/{username}:
+  /projects/{username}/unlikes/{project_id}:
     post:
       summary: Unlike a project
       parameters:
@@ -253,7 +255,7 @@ paths:
         '500':
           description: Internal server error
 
-  /projects/{project_id}/isliked/{username}:
+  /projects/does-like/{username}/{project_id}:
     get:
       summary: Check if project is liked by user
       parameters:
@@ -274,6 +276,7 @@ paths:
           description: Project or user not found
         '500':
           description: Internal server error
+
 components:
   schemas:
     Project:

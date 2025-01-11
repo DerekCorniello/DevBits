@@ -54,3 +54,62 @@ INSERT INTO PostComments (post_id, comment_id, user_id) VALUES
     ((SELECT id FROM Posts WHERE content = 'Excited to release the first version of OpenAPI Toolkit!'), (SELECT id FROM Comments WHERE content = 'Will this be compatible with earlier versions of OpenAPI?'), (SELECT id FROM Users WHERE username = 'tech_writer2')),
     ((SELECT id FROM Posts WHERE content = 'Excited to release the first version of OpenAPI Toolkit!'), (SELECT id FROM Comments WHERE content = 'I hope the next update addresses performance improvements.'), (SELECT id FROM Users WHERE username = 'data_scientist3')),
     ((SELECT id FROM Posts WHERE content = 'Excited to release the first version of OpenAPI Toolkit!'), (SELECT id FROM Comments WHERE content = 'Looking forward to testing it!'), (SELECT id FROM Users WHERE username = 'dev_user1'));
+
+
+-- CommentLikes (Adding likes to existing comments)
+INSERT INTO CommentLikes (comment_id, user_id) VALUES
+    -- Likes for project comments
+    ((SELECT id FROM Comments WHERE content = 'This is a fantastic project! Can''t wait to contribute.'), 
+     (SELECT id FROM Users WHERE username = 'tech_writer2')),
+    ((SELECT id FROM Comments WHERE content = 'Great to see more open-source tools for API development!'), 
+     (SELECT id FROM Users WHERE username = 'dev_user1')),
+    ((SELECT id FROM Comments WHERE content = 'I agree, but the API specs seem a bit too complex for beginners.'), 
+     (SELECT id FROM Users WHERE username = 'backend_guru4')),
+    
+    -- Likes for post comments
+    ((SELECT id FROM Comments WHERE content = 'Awesome update! I''ll try it out.'), 
+     (SELECT id FROM Users WHERE username = 'data_scientist3')),
+    ((SELECT id FROM Comments WHERE content = 'Thanks for sharing! Will this feature be extended soon?'), 
+     (SELECT id FROM Users WHERE username = 'ui_designer5')),
+    ((SELECT id FROM Comments WHERE content = 'Looking forward to testing it!'), 
+     (SELECT id FROM Users WHERE username = 'tech_writer2'));
+
+-- Project Follows (Additional follows for existing projects)
+INSERT INTO ProjectFollows (project_id, user_id) VALUES
+    ((SELECT id FROM Projects WHERE name = 'OpenAPI Toolkit'), 
+     (SELECT id FROM Users WHERE username = 'tech_writer2')),
+    ((SELECT id FROM Projects WHERE name = 'DocuHelper'), 
+     (SELECT id FROM Users WHERE username = 'dev_user1')),
+    ((SELECT id FROM Projects WHERE name = 'ML Research'), 
+     (SELECT id FROM Users WHERE username = 'ui_designer5'));
+
+-- Project Likes (Additional likes for existing projects)
+INSERT INTO ProjectLikes (project_id, user_id) VALUES
+    ((SELECT id FROM Projects WHERE name = 'OpenAPI Toolkit'), 
+     (SELECT id FROM Users WHERE username = 'tech_writer2')),
+    ((SELECT id FROM Projects WHERE name = 'DocuHelper'), 
+     (SELECT id FROM Users WHERE username = 'backend_guru4')),
+    ((SELECT id FROM Projects WHERE name = 'ML Research'), 
+     (SELECT id FROM Users WHERE username = 'ui_designer5'));
+
+-- Post Likes (Additional likes for existing posts)
+INSERT INTO PostLikes (post_id, user_id) VALUES
+    ((SELECT id FROM Posts WHERE content LIKE '%OpenAPI Toolkit%'), 
+     (SELECT id FROM Users WHERE username = 'tech_writer2')),
+    ((SELECT id FROM Posts WHERE content LIKE '%DocuHelper%'), 
+     (SELECT id FROM Users WHERE username = 'backend_guru4')),
+    ((SELECT id FROM Posts WHERE content LIKE '%ML Research%'), 
+     (SELECT id FROM Users WHERE username = 'ui_designer5'));
+
+-- User Follows (Additional follows between existing users)
+INSERT INTO UserFollows (follower_id, follows_id) VALUES
+    ((SELECT id FROM Users WHERE username = 'dev_user1'), 
+     (SELECT id FROM Users WHERE username = 'data_scientist3')),
+    ((SELECT id FROM Users WHERE username = 'tech_writer2'), 
+     (SELECT id FROM Users WHERE username = 'backend_guru4')),
+    ((SELECT id FROM Users WHERE username = 'data_scientist3'), 
+     (SELECT id FROM Users WHERE username = 'ui_designer5')),
+    ((SELECT id FROM Users WHERE username = 'backend_guru4'), 
+     (SELECT id FROM Users WHERE username = 'dev_user1')),
+    ((SELECT id FROM Users WHERE username = 'ui_designer5'), 
+     (SELECT id FROM Users WHERE username = 'tech_writer2'));

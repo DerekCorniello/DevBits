@@ -60,7 +60,7 @@ func GetPostsByUserId(context *gin.Context) {
 	}
 
 	if posts == nil {
-		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Posts from user with id '%v' not found", strId))
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Posts from user with id %v not found", strId))
 		return
 	}
 
@@ -88,7 +88,7 @@ func GetPostsByProjectId(context *gin.Context) {
 	}
 
 	if posts == nil {
-		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Posts within project with id '%v' not found", strId))
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Posts within project with id %v not found", strId))
 		return
 	}
 
@@ -158,19 +158,10 @@ func DeletePost(context *gin.Context) {
 		return
 	}
 
-	code, err := database.QueryDeletePost(id)
+	httpCode, err := database.QueryDeletePost(id)
 	// delete posts can return different errors...
 	if err != nil {
-		var httpCode int
-		switch code {
-		case 400:
-			httpCode = http.StatusBadRequest
-		case 404:
-			httpCode = http.StatusNotFound
-		default:
-			httpCode = http.StatusInternalServerError
-		}
-		RespondWithError(context, httpCode, fmt.Sprintf("Failed to delete post: %v", err))
+		RespondWithError(context, int(httpCode), fmt.Sprintf("Failed to delete post: %v", err))
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{
@@ -283,7 +274,7 @@ func LikePost(context *gin.Context) {
 		RespondWithError(context, httpcode, fmt.Sprintf("Failed to like post: %v", err))
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v likes %v", username, postId)})
+	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("%v likes post %v", username, postId)})
 }
 
 // UnlikePost handles POST requests to unlike a post.
@@ -300,7 +291,7 @@ func UnlikePost(context *gin.Context) {
 		RespondWithError(context, httpcode, fmt.Sprintf("Failed to unlike post: %v", err))
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v unliked %v", username, postId)})
+	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v unliked post %v", username, postId)})
 }
 
 // IsPostLiked handles GET requests to query for a post like.

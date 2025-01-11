@@ -32,7 +32,7 @@ func GetCommentById(context *gin.Context) {
 	}
 
 	if comment == nil {
-		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Post with id '%v' not found", strId))
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Comment with id %v not found", strId))
 		return
 	}
 
@@ -60,7 +60,7 @@ func GetCommentsByUserId(context *gin.Context) {
 	}
 
 	if comments == nil {
-		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Comments from user with id '%v' not found", strId))
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Comments from user with id %v not found", strId))
 		return
 	}
 
@@ -88,7 +88,7 @@ func GetCommentsByProjectId(context *gin.Context) {
 	}
 
 	if comments == nil {
-		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Comments from project with id '%v' not found", strId))
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Comments from project with id %v not found", strId))
 		return
 	}
 
@@ -116,7 +116,7 @@ func GetCommentsByPostId(context *gin.Context) {
 	}
 
 	if comments == nil {
-		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Comments from post with id '%v' not found", strId))
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Comments from post with id %v not found", strId))
 		return
 	}
 
@@ -144,7 +144,7 @@ func GetCommentsByCommentId(context *gin.Context) {
 	}
 
 	if comments == nil {
-		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Comments from comment with id '%v' not found", strId))
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Comments from comment with id %v not found", strId))
 		return
 	}
 
@@ -205,7 +205,7 @@ func CreateCommentOnPost(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Comment created successfully with id '%v'", id)})
+	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Comment created successfully with id %v", id)})
 }
 
 // CreateCommentOnProject handles POST requests to create a new comment on a project
@@ -262,7 +262,7 @@ func CreateCommentOnProject(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Comment created successfully with id '%v'", id)})
+	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Comment created successfully with id %v", id)})
 }
 
 // CreateCommentOnComment handles POST requests to create a new reply (comment) to another comment
@@ -319,7 +319,7 @@ func CreateCommentOnComment(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Reply created successfully with id '%v'", id)})
+	context.JSON(http.StatusCreated, gin.H{"message": fmt.Sprintf("Reply created successfully with id %v", id)})
 }
 
 // DeleteComment handles DELETE requests to delete a post.
@@ -337,18 +337,9 @@ func DeleteComment(context *gin.Context) {
 		return
 	}
 
-	code, err := database.QueryDeleteComment(id)
+	httpCode, err := database.QueryDeleteComment(id)
 	if err != nil {
-		var httpCode int
-		switch code {
-		case 400:
-			httpCode = http.StatusBadRequest
-		case 404:
-			httpCode = http.StatusNotFound
-		default:
-			httpCode = http.StatusInternalServerError
-		}
-		RespondWithError(context, httpCode, fmt.Sprintf("Failed to delete comment: %v", err))
+		RespondWithError(context, int(httpCode), fmt.Sprintf("Failed to delete comment: %v", err))
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{
@@ -356,7 +347,7 @@ func DeleteComment(context *gin.Context) {
 	})
 }
 
-// UpdateCommentContent handles DELETE requests to delete a post.
+// UpdateCommentContent handles PUT requests to delete a post.
 // It expects the `comment_id` parameter in the URL.
 // Returns:
 // - 400 Bad Request if the post_id is invalid.
@@ -376,7 +367,7 @@ func UpdateCommentContent(context *gin.Context) {
 		return
 	}
 	if existingComment == nil {
-		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Comment with id '%v' not found", id))
+		RespondWithError(context, http.StatusNotFound, fmt.Sprintf("Comment with id %v not found", id))
 		return
 	}
 
@@ -408,7 +399,13 @@ func UpdateCommentContent(context *gin.Context) {
 
 	context.JSON(http.StatusOK, gin.H{
 		"message": "Comment updated successfully",
-		"comment": updatedComment,
+		"comment": gin.H{
+			"id":            updatedComment.ID,
+			"user":          updatedComment.User,
+			"likes":         updatedComment.Likes,
+			"parent_comment": updatedComment.ParentComment,
+			"content":       updatedComment.Content,
+		},
 	})
 }
 
@@ -426,7 +423,7 @@ func LikeComment(context *gin.Context) {
 		RespondWithError(context, httpcode, fmt.Sprintf("Failed to like comment: %v", err))
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v likes %v", username, commentId)})
+	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v likes comment %v", username, commentId)})
 }
 
 // UnlikeComment handles POST requests to unlike a comment.
@@ -443,7 +440,7 @@ func UnlikeComment(context *gin.Context) {
 		RespondWithError(context, httpcode, fmt.Sprintf("Failed to unlike comment: %v", err))
 		return
 	}
-	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v unliked %v", username, commentId)})
+	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("%v unliked comment %v", username, commentId)})
 }
 
 // IsCommentLiked handles GET requests to query for a comment like.
