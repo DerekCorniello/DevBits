@@ -1,13 +1,90 @@
 openapi: 3.0.0
 info:
-  title: Project Management API
+  title: Project API
   description: API for managing project records, including fetching, creating, updating, and deleting projects.
   version: 1.0.0
 paths:
+  /projects/{project_id}:
+    get:
+      summary: Get project by ID
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Project details retrieved successfully
+        '400':
+          description: Invalid project ID
+        '404':
+          description: Project not found
+        '500':
+          description: Internal server error
+    delete:
+      summary: Delete project by ID
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Project deleted successfully
+        '400':
+          description: Invalid project ID
+        '404':
+          description: Project not found
+        '500':
+          description: Internal server error
+    put:
+      summary: Update project information
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Project updated successfully
+        '400':
+          description: Invalid input or disallowed fields
+        '404':
+          description: Project not found
+        '500':
+          description: Internal server error
+
+  /projects/by-user/{user_id}:
+    get:
+      summary: Get projects by user ID
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Projects retrieved successfully
+        '400':
+          description: Invalid user ID
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+
   /projects:
     post:
-      summary: Create a new project
-      description: Creates a new project record.
+      summary: Create new project
       requestBody:
         required: true
         content:
@@ -15,289 +92,67 @@ paths:
             schema:
               $ref: '#/components/schemas/Project'
       responses:
-        201:
+        '201':
           description: Project created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        400:
-          description: Invalid request payload
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '400':
+          description: Invalid input or owner verification failed
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /projects/{project_id}:
-    get:
-      summary: Get a project by ID
-      description: Retrieve project details by their ID.
-      parameters:
-        - name: project_id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        200:
-          description: Project found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Project'
-        400:
-          description: Invalid project ID format
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
-          description: Project not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-    delete:
-      summary: Delete a project by ID
-      description: Deletes a project by its ID.
-      parameters:
-        - name: project_id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        200:
-          description: Project deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        400:
-          description: Invalid project ID
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
-          description: Project not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-    patch:
-      summary: Update project information
-      description: Updates specific fields of a project by its ID.
-      parameters:
-        - name: project_id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int64
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              description: Fields to update with their new values.
-      responses:
-        200:
-          description: Project updated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  project:
-                    $ref: '#/components/schemas/Project'
-        400:
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
-          description: Project not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
   /projects/{project_id}/followers:
     get:
-      summary: Get the project's followers' ids
-      description: Returns all of the user ids of the followers of the project specified 
+      summary: Get project followers
       parameters:
         - name: project_id
           in: path
           required: true
           schema:
             type: integer
-            format: int64
       responses:
-        200:
-          description: Successfully retrieved list of ids
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  followers:
-                    type: array
-                    items:
-                      type: string
-        400:
+        '200':
+          description: Followers retrieved successfully
+        '400':
           description: Invalid project ID
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
-          description: Project not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
   /projects/{project_id}/followers/usernames:
     get:
-      summary: Get the project's followers' names
-      description: Returns all of the usernames of the followers of the project specified 
+      summary: Get project followers' usernames
       parameters:
         - name: project_id
           in: path
           required: true
           schema:
             type: integer
-            format: int64
       responses:
-        200:
-          description: Successfully retrieved list of usernames
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  followers:
-                    type: array
-                    items:
-                      type: string
-                    
-        400:
+        '200':
+          description: Follower usernames retrieved successfully
+        '400':
           description: Invalid project ID
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
-          description: Project not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
-  /projects/follows/{username}/:
+  /projects/follows/{username}:
     get:
-      summary: Get the ids of the projects a user is following
-      description: Returns all of the project ids of the projects the user follows 
+      summary: Get projects followed by user
       parameters:
-        - name: project_id
+        - name: username
           in: path
           required: true
           schema:
             type: string
       responses:
-        200:
-          description: Successfully retrieved list of ids
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  followers:
-                    type: array
-                    items:
-                      type: integer
-                      format: int64
-        400:
-          description: Invalid username
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
-          description: Username not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '200':
+          description: Following projects retrieved successfully
+        '404':
+          description: User not found
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
   /projects/follows/{username}/names:
     get:
-      summary: Get the names of the projects a user is following
-      description: Returns all of the names of the projects the user follows
+      summary: Get names of projects followed by user
       parameters:
         - name: username
           in: path
@@ -305,130 +160,122 @@ paths:
           schema:
             type: string
       responses:
-        200:
-          description: Successfully retrieved list of project names
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  followers:
-                    type: array
-                    items:
-                      type: string
-                    
-        400:
-          description: Invalid project ID
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
-          description: Project not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '200':
+          description: Project names retrieved successfully
+        '404':
+          description: User not found
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
   /projects/{username}/follow/{project_id}:
-    get:
-      summary: Allows user to follow a project
-      description: Creates a new following from a user to a project based on username and project id
+    post:
+      summary: Follow a project
       parameters:
-        - name: username
-          in: path
-          required: true
-          schema:
-            type: string
         - name: project_id
           in: path
           required: true
           schema:
             type: integer
-            format: int64
-
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
-        200:
-          description: Successfully followed project
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        400:
-          description: Invalid username or project id
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
-          description: Project or User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '200':
+          description: Project followed successfully
+        '404':
+          description: Project or user not found
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
 
   /projects/{username}/unfollow/{project_id}:
-    get:
-      summary: Allows user to unfollow a project
-      description: Deletes a current following from a user to a project based on username and project id
+    post:
+      summary: Unfollow a project
       parameters:
-        - name: username
-          in: path
-          required: true
-          schema:
-            type: string
         - name: project_id
           in: path
           required: true
           schema:
             type: integer
-            format: int64
-
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
-        200:
-          description: Successfully unfollowed project
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-        400:
-          description: Invalid username or project id
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        404:
-          description: Project or User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        500:
+        '200':
+          description: Project unfollowed successfully
+        '404':
+          description: Project or user not found
+        '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+
+  /projects/{username}/likes/{project_id}:
+    post:
+      summary: Like a project
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project liked successfully
+        '404':
+          description: Project or user not found
+        '500':
+          description: Internal server error
+
+  /projects/{username}/unlikes/{project_id}:
+    post:
+      summary: Unlike a project
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project unliked successfully
+        '404':
+          description: Project or user not found
+        '500':
+          description: Internal server error
+
+  /projects/does-like/{username}/{project_id}:
+    get:
+      summary: Check if project is liked by user
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Like status retrieved successfully
+        '404':
+          description: Project or user not found
+        '500':
+          description: Internal server error
 
 components:
   schemas:

@@ -1,0 +1,316 @@
+openapi: 3.0.0
+info:
+  title: Comments API
+  version: 1.0.0
+  description: API for managing comments on posts and projects
+
+paths:
+  /comments/{comment_id}:
+    get:
+      summary: Get comment by ID
+      parameters:
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Comment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          description: Invalid comment ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Comment not found
+        '500':
+          description: Server error
+    
+    delete:
+      summary: Delete a comment
+      parameters:
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Comment deleted successfully
+        '400':
+          description: Invalid comment ID
+        '404':
+          description: Comment not found
+        '500':
+          description: Server error
+    
+    patch:
+      summary: Update comment content
+      parameters:
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+      responses:
+        '200':
+          description: Comment updated successfully
+        '400':
+          description: Invalid request
+        '404':
+          description: Comment not found
+        '500':
+          description: Server error
+
+  /comments/user/{user_id}:
+    get:
+      summary: Get comments by user ID
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '400':
+          description: Invalid user ID
+        '404':
+          description: No comments found
+        '500':
+          description: Server error
+
+  /comments/project/{project_id}:
+    get:
+      summary: Get comments by project ID
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '400':
+          description: Invalid project ID
+        '404':
+          description: No comments found
+        '500':
+          description: Server error
+
+  /comments/post/{post_id}:
+    get:
+      summary: Get comments by post ID
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '400':
+          description: Invalid post ID
+        '404':
+          description: No comments found
+        '500':
+          description: Server error
+
+  /comments/post/{post_id}/create:
+    post:
+      summary: Create a comment on a post
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+      responses:
+        '201':
+          description: Comment created successfully
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+
+  /comments/project/{project_id}/create:
+    post:
+      summary: Create a comment on a project
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+      responses:
+        '201':
+          description: Comment created successfully
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+
+  /comments/{comment_id}/like/{username}:
+    post:
+      summary: Like a comment
+      parameters:
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comment liked successfully
+        '404':
+          description: Comment or user not found
+        '500':
+          description: Server error
+
+  /comments/{comment_id}/unlike/{username}:
+    post:
+      summary: Unlike a comment
+      parameters:
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Comment unliked successfully
+        '404':
+          description: Comment or user not found
+        '500':
+          description: Server error
+
+  /comments/{comment_id}/liked/{username}:
+    get:
+      summary: Check if user liked a comment
+      parameters:
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Like status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+        '404':
+          description: Comment or user not found
+        '500':
+          description: Server error
+
+components:
+  schemas:
+    Comment:
+      type: object
+      required:
+        - user
+        - content
+        - parent_comment
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier for the comment
+        user:
+          type: integer
+          format: int64
+          description: User ID of the comment author
+        likes:
+          type: integer
+          format: int64
+          description: Number of likes on the comment
+        parent_comment:
+          type: integer
+          format: int64
+          nullable: true
+          description: ID of the parent comment (if this is a reply)
+        created_on:
+          type: string
+          format: date-time
+          description: Creation timestamps (becomes 1/1/2000 upon deletion)
+        content:
+          type: string
+          description: Content of the comment
+    
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error type or code
+        message:
+          type: string
+          description: Detailed error message
