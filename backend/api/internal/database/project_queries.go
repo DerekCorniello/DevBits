@@ -121,7 +121,7 @@ func QueryCreateProject(proj *types.Project) (int64, error) {
 		return -1, err
 	}
 
-	currentTime := time.Now().Format("2006-01-02 15:04:05")
+	currentTime := time.Now().UTC()
 
 	query := `INSERT INTO Projects (name, description, status, links, tags, owner, creation_date)
               VALUES (?, ?, ?, ?, ?, ?, ?);`
@@ -151,17 +151,17 @@ func QueryDeleteProject(id int) (int16, error) {
 	query := `DELETE from Projects WHERE id=?;`
 	res, err := DB.Exec(query, id)
 	if err != nil {
-		return 400, fmt.Errorf("Failed to delete project `%v`: %v", id, err)
+		return http.StatusBadRequest, fmt.Errorf("Failed to delete project `%v`: %v", id, err)
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if rowsAffected == 0 {
-		return 404, fmt.Errorf("Deletion did not affect any records")
+		return http.StatusNotFound, fmt.Errorf("Deletion did not affect any records")
 	} else if err != nil {
-		return 500, fmt.Errorf("Failed to fetch affected rows: %v", err)
+		return http.StatusInternalServerError, fmt.Errorf("Failed to fetch affected rows: %v", err)
 	}
 
-	return 200, nil
+	return http.StatusOK, nil
 }
 
 // QueryUpdateProject updates an existing project in the database.

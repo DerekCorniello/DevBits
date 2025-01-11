@@ -116,19 +116,10 @@ func DeleteProject(context *gin.Context) {
 		return
 	}
 
-	code, err := database.QueryDeleteProject(id)
+	httpCode, err := database.QueryDeleteProject(id)
 	// delete projects can return different errors...
 	if err != nil {
-		var httpCode int
-		switch code {
-		case 400:
-			httpCode = http.StatusBadRequest
-		case 404:
-			httpCode = http.StatusNotFound
-		default:
-			httpCode = http.StatusInternalServerError
-		}
-		RespondWithError(context, httpCode, fmt.Sprintf("Failed to delete project: %v", err))
+		RespondWithError(context, int(httpCode), fmt.Sprintf("Failed to delete project: %v", err))
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{

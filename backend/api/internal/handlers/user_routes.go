@@ -89,18 +89,9 @@ func CreateUser(context *gin.Context) {
 // On success, responds with a 200 OK status and a message confirming the user deletion.
 func DeleteUser(context *gin.Context) {
 	username := context.Param("username")
-	code, err := database.QueryDeleteUser(username)
+	httpCode, err := database.QueryDeleteUser(username)
 	if err != nil {
-		var httpCode int
-		switch code {
-		case 400:
-			httpCode = http.StatusBadRequest
-		case 404:
-			httpCode = http.StatusNotFound
-		default:
-			httpCode = http.StatusInternalServerError
-		}
-		RespondWithError(context, httpCode, fmt.Sprintf("Failed to delete user: %v", err))
+		RespondWithError(context, int(httpCode), fmt.Sprintf("Failed to delete user: %v", err))
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("User '%v' deleted.", username)})

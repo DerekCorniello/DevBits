@@ -289,7 +289,7 @@ func QueryCommentsByCommentId(id int) ([]types.Comment, int, error) {
 //   - int64: The ID of the newly created comment.
 //   - error: An error if the operation fails.
 func QueryCreateCommentOnPost(comment types.Comment, postId int) (int64, error) {
-	currentTime := time.Now().Format("2006-01-02 15:04:05")
+	currentTime := time.Now().UTC()
 
 	query := `INSERT INTO Comments (user_id, content, parent_comment_id, likes, creation_date) 
               VALUES (?, ?, ?, ?, ?);`
@@ -326,7 +326,7 @@ func QueryCreateCommentOnPost(comment types.Comment, postId int) (int64, error) 
 //   - int64: The ID of the newly created comment.
 //   - error: An error if the operation fails.
 func QueryCreateCommentOnProject(comment types.Comment, projectId int) (int64, error) {
-	currentTime := time.Now().Format("2006-01-02 15:04:05")
+	currentTime := time.Now().UTC()
 
 	query := `INSERT INTO Comments (user_id, content, parent_comment_id, likes, creation_date) 
               VALUES (?, ?, ?, ?, ?);`
@@ -363,7 +363,7 @@ func QueryCreateCommentOnProject(comment types.Comment, projectId int) (int64, e
 //   - int64: The ID of the newly created comment.
 //   - error: An error if the operation fails.
 func QueryCreateCommentOnComment(comment types.Comment, commentId int) (int64, error) {
-	currentTime := time.Now().Format("2006-01-02 15:04:05")
+	currentTime := time.Now().UTC()
 
 	query := `INSERT INTO Comments (user_id, content, parent_comment_id, likes, creation_date) 
               VALUES (?, ?, ?, ?, ?);`
@@ -401,8 +401,8 @@ func QueryDeleteComment(id int) (int16, error) {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to update ProjectComments for deleted comment: %v", err)
 	}
 
-	query := `UPDATE Comments SET user_id = -1, content = "This comment was deleted.", likes = 0 WHERE id = ?`
-	res, err := DB.Exec(query, id)
+	query := `UPDATE Comments SET user_id = -1, content = "This comment was deleted.", likes = 0, creation_date = ? WHERE id = ?`
+	res, err := DB.Exec(query, time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC), id)
 	if err != nil {
 		return http.StatusBadRequest, fmt.Errorf("Failed to soft delete comment `%v`: %v", id, err)
 	}
@@ -420,7 +420,7 @@ func QueryDeleteComment(id int) (int16, error) {
 // QueryUpdateCommentContent updates comment's content
 //
 // Parameters:
-//   - id: The id of the comment to be deleted
+//   - id: The id of the comment to be updated
 //   - newContent: the updated content
 //
 // Returns:
@@ -428,41 +428,36 @@ func QueryDeleteComment(id int) (int16, error) {
 //   - error: An error if the operation fails.
 func QueryUpdateCommentContent(id int, newContent string) (int16, error) {
 	// get comment creation time to validate time diff
-	var creationDate string
+	var createdAt time.Time
 	query := `SELECT creation_date FROM Comments WHERE id = ?`
-	err := DB.QueryRow(query, id).Scan(&creationDate)
+	err := DB.QueryRow(query, id).Scan(&createdAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return 404, fmt.Errorf("Comment not found")
+			return http.StatusNotFound, fmt.Errorf("Comment not found")
 		}
-		return 500, fmt.Errorf("Failed to fetch comment creation date: %v", err)
+		return http.StatusInternalServerError, fmt.Errorf("Failed to fetch comment creation date: %v", err)
 	}
 
-	createdAt, err := time.Parse("2006-01-02T15:04:05Z", creationDate)
-	if err != nil {
-		return 500, fmt.Errorf("Failed to parse creation date: %v", err)
-	}
-
-	now := time.Now()
+	now := time.Now().UTC()
 	// now check if the comment is older than 2 minutes
 	if now.Sub(createdAt) > 2*time.Minute {
-		return 400, fmt.Errorf("Cannot update comment. More than 2 minutes have passed since posting.")
+        return http.StatusBadRequest, fmt.Errorf("Cannot update comment. More than 2 minutes have passed since posting.")
 	}
 
 	query = `UPDATE Comments SET content = ? WHERE id = ?`
 	res, err := DB.Exec(query, newContent, id)
 	if err != nil {
-		return 500, fmt.Errorf("Failed to update comment content: %v", err)
+		return http.StatusInternalServerError, fmt.Errorf("Failed to update comment content: %v", err)
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if rowsAffected == 0 {
-		return 404, fmt.Errorf("Comment not found or no changes made")
+		return http.StatusNotFound, fmt.Errorf("Comment not found or no changes made")
 	} else if err != nil {
-		return 500, fmt.Errorf("Failed to fetch affected rows: %v", err)
+		return http.StatusInternalServerError, fmt.Errorf("Failed to fetch affected rows: %v", err)
 	}
 
-	return 200, nil
+	return http.StatusOK, nil
 }
 
 // CreateCommentLike creates a like relationship between a user and a comment.

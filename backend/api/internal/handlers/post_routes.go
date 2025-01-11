@@ -158,19 +158,10 @@ func DeletePost(context *gin.Context) {
 		return
 	}
 
-	code, err := database.QueryDeletePost(id)
+	httpCode, err := database.QueryDeletePost(id)
 	// delete posts can return different errors...
 	if err != nil {
-		var httpCode int
-		switch code {
-		case 400:
-			httpCode = http.StatusBadRequest
-		case 404:
-			httpCode = http.StatusNotFound
-		default:
-			httpCode = http.StatusInternalServerError
-		}
-		RespondWithError(context, httpCode, fmt.Sprintf("Failed to delete post: %v", err))
+		RespondWithError(context, int(httpCode), fmt.Sprintf("Failed to delete post: %v", err))
 		return
 	}
 	context.JSON(http.StatusOK, gin.H{

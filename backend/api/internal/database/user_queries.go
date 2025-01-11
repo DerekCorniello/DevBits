@@ -101,7 +101,7 @@ func QueryCreateUser(user *types.User) error {
 		return fmt.Errorf("Failed to marshal links for user '%v': %v", user.Username, err)
 	}
 
-	currentTime := time.Now().Format("2006-01-02 15:04:05")
+	currentTime := time.Now().UTC()
 
 	query := `INSERT INTO Users (username, picture, bio, links, creation_date)
 	VALUES (?, ?, ?, ?, ?);`
@@ -131,17 +131,17 @@ func QueryDeleteUser(username string) (int16, error) {
 	query := `DELETE from Users WHERE username=?;`
 	res, err := DB.Exec(query, username)
 	if err != nil {
-		return 400, fmt.Errorf("Failed to delete user '%v': %v", username, err)
+		return http.StatusBadRequest, fmt.Errorf("Failed to delete user '%v': %v", username, err)
 	}
 
 	RowsAffected, err := res.RowsAffected()
 	if RowsAffected == 0 {
-		return 404, fmt.Errorf("Deletion did not affect any records")
+		return http.StatusNotFound, fmt.Errorf("Deletion did not affect any records")
 	} else if err != nil {
-		return 500, fmt.Errorf("Failed to fetch affected rows: %v", err)
+		return http.StatusInternalServerError, fmt.Errorf("Failed to fetch affected rows: %v", err)
 	}
 
-	return 200, nil
+	return http.StatusOK, nil
 }
 
 // QueryUpdateUser updates a user's details by their username.

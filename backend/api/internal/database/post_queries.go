@@ -50,7 +50,7 @@ func QueryPost(id int) (*types.Post, error) {
 //   - int64: The ID of the newly created post.
 //   - error: An error if the operation fails.
 func QueryCreatePost(post *types.Post) (int64, error) {
-	currentTime := time.Now().Format("2006-01-02 15:04:05")
+	currentTime := time.Now().UTC()
 
 	query := `INSERT INTO Posts (user_id, project_id, content, likes, creation_date) 
               VALUES (?, ?, ?, ?, ?);`
@@ -80,17 +80,17 @@ func QueryDeletePost(id int) (int16, error) {
 	query := `DELETE from Posts WHERE id=?;`
 	res, err := DB.Exec(query, id)
 	if err != nil {
-		return 400, fmt.Errorf("Failed to delete post `%v`: %v", id, err)
+		return http.StatusBadRequest, fmt.Errorf("Failed to delete post `%v`: %v", id, err)
 	}
 
 	rowsAffected, err := res.RowsAffected()
 	if rowsAffected == 0 {
-		return 404, fmt.Errorf("Deletion did not affect any records")
+		return http.StatusNotFound, fmt.Errorf("Deletion did not affect any records")
 	} else if err != nil {
-		return 500, fmt.Errorf("Failed to fetch affected rows: %v", err)
+		return http.StatusInternalServerError, fmt.Errorf("Failed to fetch affected rows: %v", err)
 	}
 
-	return 200, nil
+	return http.StatusOK, nil
 }
 
 // QueryUpdateProject updates an existing post in the database.
