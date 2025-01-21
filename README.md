@@ -1,4 +1,4 @@
-# DevBits
+# DevBits 
 
 ## Goal: Create an X and LinkedIn crossover for posting real content about your projects, semi-formally
 
