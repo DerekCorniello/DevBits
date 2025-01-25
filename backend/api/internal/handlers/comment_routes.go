@@ -400,11 +400,11 @@ func UpdateCommentContent(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{
 		"message": "Comment updated successfully",
 		"comment": gin.H{
-			"id":            updatedComment.ID,
-			"user":          updatedComment.User,
-			"likes":         updatedComment.Likes,
+			"id":             updatedComment.ID,
+			"user":           updatedComment.User,
+			"likes":          updatedComment.Likes,
 			"parent_comment": updatedComment.ParentComment,
-			"content":       updatedComment.Content,
+			"content":        updatedComment.Content,
 		},
 	})
 }
@@ -455,6 +455,22 @@ func IsCommentLiked(context *gin.Context) {
 	httpcode, exists, err := database.QueryCommentLike(username, commentId)
 	if err != nil {
 		RespondWithError(context, httpcode, fmt.Sprintf("Failed to query for comment like: %v", err))
+		return
+	}
+	context.JSON(httpcode, gin.H{"status": exists})
+}
+
+// IsCommentLiked handles GET requests to query for a comment like.
+// It expects the `comment_id` parameters in the URL.
+// Returns:
+// - Appropriate error code for database failures or invalid input.
+// On success, responds with a 200 OK status and a status message.
+func IsCommentEditable(context *gin.Context) {
+	commentId := context.Param("comment_id")
+
+	httpcode, exists, err := database.QueryIsCommentEditable(commentId)
+	if err != nil {
+		RespondWithError(context, httpcode, fmt.Sprintf("Failed to query for comment: %v", err))
 		return
 	}
 	context.JSON(httpcode, gin.H{"status": exists})

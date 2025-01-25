@@ -97,6 +97,7 @@ func main() {
 	router.POST("/comments/:username/likes/:comment_id", handlers.LikeComment)
 	router.POST("/comments/:username/unlikes/:comment_id", handlers.UnlikeComment)
 	router.GET("/comments/does-like/:username/:comment_id", handlers.IsCommentLiked)
+	router.GET("/comments/can-edit/:comment_id", handlers.IsCommentEditable)
 
 	var dbinfo, dbtype string
 	if DEBUG {
