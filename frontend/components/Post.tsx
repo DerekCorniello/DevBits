@@ -56,6 +56,10 @@ function Like() {
         </Animated.View>
     );
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> eli-dev
 function Comment({ onPress }: { onPress: () => void }) {
     return (
         <Icon
@@ -68,6 +72,10 @@ function Comment({ onPress }: { onPress: () => void }) {
         />
     );
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> eli-dev
 export function Post({
     id,
     user,
@@ -80,6 +88,7 @@ export function Post({
     const [isCommentSectionVisible, setIsCommentSectionVisible] = useState(false);
     const [commentData, setCommentData] = useState<CommentProps[]>([]);
 
+<<<<<<< HEAD
     const toggleCommentSection = () => {
         setIsCommentSectionVisible(!isCommentSectionVisible);
     };
@@ -87,6 +96,19 @@ export function Post({
         if (isCommentSectionVisible) {
             const fetchedComments: CommentProps[] = [
                 // API CALL
+=======
+    // Toggle comment section visibility
+    const toggleCommentSection = () => {
+        setIsCommentSectionVisible(!isCommentSectionVisible);
+    };
+
+    // Fetch comments from an external source (simulated here)
+    useEffect(() => {
+        if (isCommentSectionVisible) {
+            // Simulate fetching comment data for the post
+            const fetchedComments: CommentProps[] = [
+                // You should replace this with an actual API call
+>>>>>>> eli-dev
                 { id: 1, user: 1, post: id, likes: 5, parent_comment: 0, created_on: '2025-01-01T00:00:00Z', content: "Great post!" },
                 { id: 2, user: 2, post: id, likes: 2, parent_comment: 0, created_on: '2025-01-02T00:00:00Z', content: "I agree!" }
             ];
@@ -137,8 +159,16 @@ export function Post({
                     hour12: true,
                 })}
             </Text>
+<<<<<<< HEAD
             {isCommentSectionVisible && (
                 <View style={styles.commentSection}>
+=======
+
+            {/* Comment Section */}
+            {isCommentSectionVisible && (
+                <View style={styles.commentSection}>
+                    {/* Render Comments */}
+>>>>>>> eli-dev
                     {commentData.map((comment) => (
                         <View key={comment.id} style={styles.comment}>
                             <Text style={styles.commentContent}>{comment.content}</Text>

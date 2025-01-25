@@ -34,6 +34,7 @@ export interface CommentProps {
     id: number;
     user: number;
     post: number;
+    likes: number;
     parent_comment: number;
     created_on: string;
     content: string;
