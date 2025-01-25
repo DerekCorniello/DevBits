@@ -494,16 +494,29 @@ func CreateProjectLike(username string, strProjId string) (int, error) {
 		return http.StatusOK, nil
 	}
 
+	tx, err := DB.Begin()
+	if err != nil {
+		return -1, fmt.Errorf("failed to begin transaction: %v", err)
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
 	// insert the like
 	insertQuery := `INSERT INTO ProjectLikes (user_id, project_id) VALUES (?, ?)`
-	_, err = DB.Exec(insertQuery, user_id, projId)
+	_, err = tx.Exec(insertQuery, user_id, projId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to insert project like: %v", err)
 	}
 
 	// update the likes column
 	updateQuery := `UPDATE Projects SET likes = likes + 1 WHERE id = ?`
-	_, err = DB.Exec(updateQuery, projId)
+	_, err = tx.Exec(updateQuery, projId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
 	}
@@ -543,9 +556,22 @@ func RemoveProjectLike(username string, strProjId string) (int, error) {
         return http.StatusNotFound, fmt.Errorf("Project with id %v does not exist", projId)
     }
 
+	tx, err := DB.Begin()
+	if err != nil {
+		return -1, fmt.Errorf("failed to begin transaction: %v", err)
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
 	// perform the delete operation
 	deleteQuery := `DELETE FROM ProjectLikes WHERE user_id = ? AND project_id = ?`
-	result, err := DB.Exec(deleteQuery, user_id, projId)
+	result, err := tx.Exec(deleteQuery, user_id, projId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to delete project like: %v", err)
 	}
@@ -563,7 +589,7 @@ func RemoveProjectLike(username string, strProjId string) (int, error) {
 
 	// update the likes column
 	updateQuery := `UPDATE Projects SET likes = likes - 1 WHERE id = ?`
-	_, err = DB.Exec(updateQuery, projId)
+	_, err = tx.Exec(updateQuery, projId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
 	}

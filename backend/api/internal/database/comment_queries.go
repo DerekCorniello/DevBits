@@ -289,12 +289,25 @@ func QueryCommentsByCommentId(id int) ([]types.Comment, int, error) {
 //   - int64: The ID of the newly created comment.
 //   - error: An error if the operation fails.
 func QueryCreateCommentOnPost(comment types.Comment, postId int) (int64, error) {
+	tx, err := DB.Begin()
+	if err != nil {
+		return -1, fmt.Errorf("failed to begin transaction: %v", err)
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
 	currentTime := time.Now().UTC()
 
 	query := `INSERT INTO Comments (user_id, content, parent_comment_id, likes, creation_date) 
               VALUES (?, ?, ?, ?, ?);`
 
-	res, err := DB.Exec(query, comment.User, comment.Content, comment.ParentComment, 0, currentTime)
+	res, err := tx.Exec(query, comment.User, comment.Content, comment.ParentComment, 0, currentTime)
 
 	if err != nil {
 		return -1, fmt.Errorf("Failed to create comment: %v", err)
@@ -308,7 +321,7 @@ func QueryCreateCommentOnPost(comment types.Comment, postId int) (int64, error) 
 	query = `INSERT INTO PostComments (user_id, post_id, comment_id)
              VALUES (?, ?, ?)`
 
-	res, err = DB.Exec(query, comment.User, postId, lastId)
+	_, err = tx.Exec(query, comment.User, postId, lastId)
 	if err != nil {
 		return -1, fmt.Errorf("Failed to link comment to post: %v", err)
 	}
@@ -326,12 +339,24 @@ func QueryCreateCommentOnPost(comment types.Comment, postId int) (int64, error) 
 //   - int64: The ID of the newly created comment.
 //   - error: An error if the operation fails.
 func QueryCreateCommentOnProject(comment types.Comment, projectId int) (int64, error) {
+	tx, err := DB.Begin()
+	if err != nil {
+		return -1, fmt.Errorf("failed to begin transaction: %v", err)
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
 	currentTime := time.Now().UTC()
 
 	query := `INSERT INTO Comments (user_id, content, parent_comment_id, likes, creation_date) 
               VALUES (?, ?, ?, ?, ?);`
 
-	res, err := DB.Exec(query, comment.User, comment.Content, comment.ParentComment, 0, currentTime)
+	res, err := tx.Exec(query, comment.User, comment.Content, comment.ParentComment, 0, currentTime)
 
 	if err != nil {
 		return -1, fmt.Errorf("Failed to create comment: %v", err)
@@ -345,7 +370,7 @@ func QueryCreateCommentOnProject(comment types.Comment, projectId int) (int64, e
 	query = `INSERT INTO ProjectComments (user_id, project_id, comment_id)
              VALUES (?, ?, ?)`
 
-	res, err = DB.Exec(query, comment.User, projectId, lastId)
+	_, err = tx.Exec(query, comment.User, projectId, lastId)
 	if err != nil {
 		return -1, fmt.Errorf("Failed to link comment to project: %v", err)
 	}
@@ -391,18 +416,31 @@ func QueryCreateCommentOnComment(comment types.Comment, commentId int) (int64, e
 //   - int16: http status code
 //   - error: An error if the operation fails.
 func QueryDeleteComment(id int) (int16, error) {
-	_, err := DB.Exec(`UPDATE PostComments SET user_id = -1 WHERE comment_id = ?`, id)
+	tx, err := DB.Begin()
+	if err != nil {
+		return -1, fmt.Errorf("failed to begin transaction: %v", err)
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	_, err = tx.Exec(`UPDATE PostComments SET user_id = -1 WHERE comment_id = ?`, id)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to update PostComments for deleted comment: %v", err)
 	}
 
-	_, err = DB.Exec(`UPDATE ProjectComments SET user_id = -1 WHERE comment_id = ?`, id)
+	_, err = tx.Exec(`UPDATE ProjectComments SET user_id = -1 WHERE comment_id = ?`, id)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to update ProjectComments for deleted comment: %v", err)
 	}
 
 	query := `UPDATE Comments SET user_id = -1, content = "This comment was deleted.", likes = 0, creation_date = ? WHERE id = ?`
-	res, err := DB.Exec(query, time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC), id)
+	res, err := tx.Exec(query, time.Date(1970, 1, 1, 0, 0, 0, 0, time.UTC), id)
 	if err != nil {
 		return http.StatusBadRequest, fmt.Errorf("Failed to soft delete comment `%v`: %v", id, err)
 	}
@@ -501,17 +539,29 @@ func CreateCommentLike(username string, strCommentId string) (int, error) {
 		// like already exists, but we return success to keep it idempotent
 		return http.StatusOK, nil
 	}
+	tx, err := DB.Begin()
+	if err != nil {
+		return -1, fmt.Errorf("failed to begin transaction: %v", err)
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
 
 	// insert the like
 	insertQuery := `INSERT INTO CommentLikes (user_id, comment_id) VALUES (?, ?)`
-	_, err = DB.Exec(insertQuery, user_id, commentId)
+	_, err = tx.Exec(insertQuery, user_id, commentId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to insert comment like: %v", err)
 	}
 
 	// update the likes column
 	updateQuery := `UPDATE Comments SET likes = likes + 1 WHERE id = ?`
-	_, err = DB.Exec(updateQuery, commentId)
+	_, err = tx.Exec(updateQuery, commentId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
 	}
@@ -547,9 +597,22 @@ func RemoveCommentLike(username string, strCommentId string) (int, error) {
 		return http.StatusInternalServerError, fmt.Errorf("An error occurred verifying the comment exists: %v", err)
 	}
 
+	tx, err := DB.Begin()
+	if err != nil {
+		return -1, fmt.Errorf("failed to begin transaction: %v", err)
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
 	// perform the delete operation
 	deleteQuery := `DELETE FROM CommentLikes WHERE user_id = ? AND comment_id = ?`
-	result, err := DB.Exec(deleteQuery, user_id, commentId)
+	result, err := tx.Exec(deleteQuery, user_id, commentId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to delete comment like: %v", err)
 	}
@@ -567,7 +630,7 @@ func RemoveCommentLike(username string, strCommentId string) (int, error) {
 
 	// update the likes column
 	updateQuery := `UPDATE Comments SET likes = likes - 1 WHERE id = ?`
-	_, err = DB.Exec(updateQuery, commentId)
+	_, err = tx.Exec(updateQuery, commentId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
 	}
@@ -650,7 +713,7 @@ func QueryIsCommentEditable(strCommId string) (int, bool, error) {
 	now := time.Now().UTC()
 	// now check if the comment is older than 2 minutes
 	if now.Sub(createdAt) > 2*time.Minute {
-        return http.StatusOK, false, nil
+		return http.StatusOK, false, nil
 	} else {
 		return http.StatusOK, true, nil
 	}
