@@ -1,12 +1,11 @@
 package main
 
 import (
-	"log"
-	"os"
-
 	"backend/api/internal/database"
 	"backend/api/internal/handlers"
 	"backend/api/internal/logger"
+	"log"
+	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -114,5 +113,5 @@ func main() {
 	}
 	database.Connect(dbinfo, dbtype)
 
-	router.Run("localhost:8080")
+	router.Run("0.0.0.0:8080")
 }

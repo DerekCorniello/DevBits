@@ -21,6 +21,7 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const user = useAuth0();
 
   useEffect(() => {
     if (loaded) {
@@ -34,6 +35,10 @@ export default function RootLayout() {
     return null;
   }
 
+  if (!user) {
+    return null /*Login Screen Goes Here*/;
+  }
+
   return (
     <Auth0Provider
       domain={"dev-mcbbo7b2hkpnb65f.us.auth0.com"}
@@ -43,6 +48,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="+not-found" />
+          <Stack.Screen name="login" />
         </Stack>
         <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
       </ThemeProvider>

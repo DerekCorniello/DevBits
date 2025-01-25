@@ -14,3 +14,5 @@ const LogoutButton = () => {
 
   return <Button onPress={onPress} title="Log out" />;
 };
+
+export default LogoutButton;

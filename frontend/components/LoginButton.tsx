@@ -14,3 +14,5 @@ const LoginButton = () => {
 
   return <Button onPress={onPress} title="Log in" />;
 };
+
+export default LoginButton;
