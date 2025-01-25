@@ -99,6 +99,9 @@ func main() {
 	router.GET("/comments/does-like/:username/:comment_id", handlers.IsCommentLiked)
 	router.GET("/comments/can-edit/:comment_id", handlers.IsCommentEditable)
 
+	router.GET("/feed/posts", handlers.GetPostsFeed)
+	router.GET("/feed/projects", handlers.GetProjectsFeed)
+
 	var dbinfo, dbtype string
 	if DEBUG {
 		dbinfo = "./api/internal/database/dev.sqlite3"

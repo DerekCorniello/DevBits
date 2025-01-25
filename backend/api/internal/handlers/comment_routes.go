@@ -12,7 +12,7 @@ import (
 )
 
 // GetPostById handles GET requests to retrieve project information by its ID.
-// It expects the `post_id` parameter in the URL and does not require a request body.
+// It expects the `comment_id` parameter in the URL and does not require a request body.
 // Returns:
 // - 400 Bad Request if the ID is invalid.
 // - 404 Not Found if the post does not exist.
