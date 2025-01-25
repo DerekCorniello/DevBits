@@ -46,52 +46,7 @@ export default function HomeScreen() {
           likes={Math.floor(Math.random() * 100)}
           content={`This is a test post with a content that I makde for the test post that has content. This content is for testing only. that I made. -E`}
           created_on={`2021-01-01T00:00:00Z`}
-          comments={[]}
-        />
-        <Post
-          id={1}
-          user={2}
-          project={1}
-          likes={Math.floor(Math.random() * 100)}
-          content={`This is a test post with a content that I makde for the test post that has content. This content is for testing only. that I made. -E`}
-          created_on={`2021-01-01T00:00:00Z`}
-          comments={[]}
-        />
-        <Post
-          id={1}
-          user={2}
-          project={1}
-          likes={Math.floor(Math.random() * 100)}
-          content={`This is a test post with a content that I makde for the test post that has content. This content is for testing only. that I made. -E`}
-          created_on={`2021-01-01T00:00:00Z`}
-          comments={[]}
-        />
-        <Post
-          id={1}
-          user={2}
-          project={1}
-          likes={Math.floor(Math.random() * 100)}
-          content={`This is a test post with a content that I makde for the test post that has content. This content is for testing only. that I made. -E`}
-          created_on={`2021-01-01T00:00:00Z`}
-          comments={[]}
-        />
-        <Post
-          id={1}
-          user={2}
-          project={1}
-          likes={Math.floor(Math.random() * 100)}
-          content={`This is a test post with a content that I makde for the test post that has content. This content is for testing only. that I made. -E`}
-          created_on={`2021-01-01T00:00:00Z`}
-          comments={[]}
-        />
-        <Post
-          id={1}
-          user={2}
-          project={1}
-          likes={Math.floor(Math.random() * 100)}
-          content={`This is a test post with a content that I makde for the test post that has content. This content is for testing only. that I made. -E`}
-          created_on={`2021-01-01T00:00:00Z`}
-          comments={[]}
+          comments={[20]}
         />
       </ScrollView>
       <CreatePost />

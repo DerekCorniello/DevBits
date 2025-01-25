@@ -36,7 +36,7 @@ function Like() {
                     <Icon
                         name="lightbulb"
                         type="material"
-                        color="#16ff00"
+                        color="#00ff03"
                         size={20}
                         iconStyle={styles.iconStyle}
                     />
@@ -57,17 +57,59 @@ function Like() {
     );
 }
 function Comment({ onPress }: { onPress: () => void }) {
+    const [checked, setChecked] = useState(false);
+    const scaleValue = useRef(new Animated.Value(1)).current;
+
+    const toggleComment = () => {
+        Animated.sequence([
+            Animated.timing(scaleValue, {
+                toValue: 1.2,
+                duration: 100,
+                useNativeDriver: true,
+            }),
+            Animated.timing(scaleValue, {
+                toValue: 1,
+                duration: 200,
+                useNativeDriver: true,
+            }),
+        ]).start();
+        setChecked(!checked);
+        onPress();
+    };
+
     return (
-        <Icon
-            name="comment"
-            type="octicon"
-            color="grey"
-            size={20}
-            iconStyle={styles.iconStyle}
-            onPress={onPress}  // Trigger toggle on click
-        />
+        <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+            <CheckBox
+                center
+                containerStyle={[
+                    styles.checkboxContainer,
+                    checked && styles.glowEffect,
+                ]}
+                checkedIcon={
+                    <Icon
+                        name="chat-bubble"
+                        type="material"
+                        color="#00ff03"
+                        size={20}
+                        iconStyle={styles.iconStyle}
+                    />
+                }
+                uncheckedIcon={
+                    <Icon
+                        name="chat-bubble-outline"
+                        type="material"
+                        color="grey"
+                        size={20}
+                        iconStyle={styles.iconStyle}
+                    />
+                }
+                checked={checked}
+                onPress={toggleComment}
+            />
+        </Animated.View>
     );
 }
+
 export function Post({
     id,
     user,
