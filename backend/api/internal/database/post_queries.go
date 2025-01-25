@@ -230,7 +230,7 @@ func CreatePostLike(username string, strPostId string) (int, error) {
 	}
 
 	// verify post exists
-    post, err := QueryPost(postId)
+	post, err := QueryPost(postId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("An error occurred verifying the post exists: %v", err)
 	} else if post == nil {
@@ -250,17 +250,28 @@ func CreatePostLike(username string, strPostId string) (int, error) {
 		// like already exists, but we return success to keep it idempotent
 		return http.StatusOK, nil
 	}
+	tx, err := DB.Begin()
+	if err != nil {
+		return -1, fmt.Errorf("failed to begin transaction: %v", err)
+	}
 
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
 	// insert the like
 	insertQuery := `INSERT INTO PostLikes (user_id, post_id) VALUES (?, ?)`
-	_, err = DB.Exec(insertQuery, user_id, postId)
+	_, err = tx.Exec(insertQuery, user_id, postId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to insert post like: %v", err)
 	}
 
 	// update the likes column
 	updateQuery := `UPDATE Posts SET likes = likes + 1 WHERE id = ?`
-	_, err = DB.Exec(updateQuery, postId)
+	_, err = tx.Exec(updateQuery, postId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
 	}
@@ -295,10 +306,21 @@ func RemovePostLike(username string, strPostId string) (int, error) {
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("An error occurred verifying the post exists: %v", err)
 	}
+	tx, err := DB.Begin()
+	if err != nil {
+		return -1, fmt.Errorf("failed to begin transaction: %v", err)
+	}
 
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
 	// perform the delete operation
 	deleteQuery := `DELETE FROM PostLikes WHERE user_id = ? AND post_id = ?`
-	result, err := DB.Exec(deleteQuery, user_id, postId)
+	result, err := tx.Exec(deleteQuery, user_id, postId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to delete post like: %v", err)
 	}
@@ -316,7 +338,7 @@ func RemovePostLike(username string, strPostId string) (int, error) {
 
 	// update the likes column
 	updateQuery := `UPDATE Posts SET likes = likes - 1 WHERE id = ?`
-	_, err = DB.Exec(updateQuery, postId)
+	_, err = tx.Exec(updateQuery, postId)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Failed to update likes count: %v", err)
 	}
