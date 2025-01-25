@@ -271,6 +271,30 @@ paths:
         '500':
           description: Server error
 
+  /comments/can-edit/{comment_id}:
+    get:
+      summary: Check if a comment can be edited
+      parameters:
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Like status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+        '404':
+          description: Comment or user not found
+        '500':
+          description: Server error
+
 components:
   schemas:
     Comment:

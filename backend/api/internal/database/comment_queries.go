@@ -441,7 +441,7 @@ func QueryUpdateCommentContent(id int, newContent string) (int16, error) {
 	now := time.Now().UTC()
 	// now check if the comment is older than 2 minutes
 	if now.Sub(createdAt) > 2*time.Minute {
-        return http.StatusBadRequest, fmt.Errorf("Cannot update comment. More than 2 minutes have passed since posting.")
+		return http.StatusBadRequest, fmt.Errorf("Cannot update comment. More than 2 minutes have passed since posting.")
 	}
 
 	query = `UPDATE Comments SET content = ? WHERE id = ?`
@@ -583,6 +583,7 @@ func RemoveCommentLike(username string, strCommentId string) (int, error) {
 //
 // Returns:
 //   - int: HTTP-like status code indicating the result of the operation.
+//   - bool: is the comment liked
 //   - error: An error if the operation fails or.
 func QueryCommentLike(username string, strCommId string) (int, bool, error) {
 	// get user ID from username, implicitly checks if user exists
@@ -618,4 +619,39 @@ func QueryCommentLike(username string, strCommId string) (int, bool, error) {
 		return http.StatusOK, false, nil
 	}
 
+}
+
+// IsCommentEditable queries if a comment is within it's time to be edited.
+//
+// Parameters:
+//   - commentID: The ID of the comment
+//
+// Returns:
+//   - int: HTTP-like status code indicating the result of the operation.
+//   - bool: if comment is still editable
+//   - error: An error if the operation fails or.
+
+func QueryIsCommentEditable(strCommId string) (int, bool, error) {
+	commId, err := strconv.Atoi(strCommId)
+	if err != nil {
+		return http.StatusInternalServerError, false, err
+	}
+
+	var createdAt time.Time
+	query := `SELECT creation_date FROM Comments WHERE id = ?`
+	err = DB.QueryRow(query, commId).Scan(&createdAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return http.StatusNotFound, false, fmt.Errorf("Comment not found")
+		}
+		return http.StatusInternalServerError, false, fmt.Errorf("Failed to fetch comment creation date: %v", err)
+	}
+
+	now := time.Now().UTC()
+	// now check if the comment is older than 2 minutes
+	if now.Sub(createdAt) > 2*time.Minute {
+        return http.StatusOK, false, nil
+	} else {
+		return http.StatusOK, true, nil
+	}
 }
